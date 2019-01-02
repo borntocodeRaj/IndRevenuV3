@@ -1,0 +1,73 @@
+//## Module : YmIrDvLoader
+//SFD
+//  Name    : YmIrDvLoader.h
+//  Author  : M. Hue
+//  Desc    : Description of classes used in IND processing for the processing
+//	      itself providing data from IND processing to PNI processing
+//EFD
+
+#ifndef _YMIRDVLOADER_H
+#define _YMIRDVLOADER_H 1
+
+//## Includes
+#include <stdlib.h>
+#include <map>
+#include <list>
+#include <YmDate.h>
+#include <YmIrTranche.h>
+#include <YmIrTrain.h>
+
+
+//## Defines
+#define SIGNATURE_DV "LIENSTRAINS/TRANCHES"
+/* Caracteristiques du fichier DV */
+#define RECORD_DV_SIZE 512
+/* Retour a la ligne a la fin des enregistrements DV */
+#define RETOUR_LIGNE_DV 1
+
+//## Typedef
+typedef map<string,YmIrTranche *,less<string> >  mapTranchesType;
+
+
+class YmIrDvLoader
+{
+ public:
+  //## Constructeurs
+  YmIrDvLoader(YmDate infoBatchDate);
+
+  //## Destructeur
+  ~YmIrDvLoader();
+
+  //## Accesseurs
+  mapTranchesType *get_selectedTrancheMap()  { return &_selectedTrancheMap; }
+
+  //## Autres
+  void  LectureDV(YmMapDatesIrATraiter *MapDatesATraiter);
+
+  /* On determine ici pour quelle date la tranche doit etre selectionnee
+   * En effet une tranche date peut etre portee par des trains partant a
+   * des dates differentes */
+  short DetermineTrancheRrd(YmIrTranche*);
+  bool  DetermineTrancheTrain(YmIrTranche* pTranche_, int lFirstTrain, YmDate &dateTrain);
+
+ private:
+  //## Donnees
+  /* Derniere date InfoBatch */
+  YmDate	    _lastInfoBatchDate;
+  /* Chemin complet du fichier */
+  string	    _inputFileName;
+  /* Map de toutes les tranches selectionnees */
+  list<YmIrTrain *> _trainList;
+  /* Liste des trains, elle n'est pas utilisee, elle existe pour pouvoir
+   * detruire plus facilement les instances de YmIrTranche */
+  map<string,YmIrTranche *,less<string> > _selectedTrancheMap;
+
+  //## Autres
+  YmDate *Char2Date(const char *);
+  void	 verifDateHeure(YmDate *date_, char *heure_, int u_heure, string *lTime, string lFil);
+  void   verifSignature(YmDate *date_, char *buffer, string lFil);
+  void   lectureFichierDV(char *buffer, unsigned short tailleEnregistrement, char *dateChar,
+			  string lFil, FILE *file_, YmMapDatesIrATraiter *MapDatesATraitees);
+};
+
+#endif

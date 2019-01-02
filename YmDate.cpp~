@@ -1,0 +1,445 @@
+//## Module : YmDate
+//SFD
+// Name     : YmDate.cpp
+// Author   : JM. Grugeaux
+// Desc     : Realisation d'une classe CDate adapte a nos besoins
+//EDF
+
+using namespace std;
+
+//## Includes
+#include <stdlib.h>
+#include <stdio.h>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include "YmDate.h"
+
+//SMD
+// Name : DonneHeure
+// Desc : Donne l'heure locale sous forme d'un char*
+//EMD
+char *DonneHeure()
+{
+  static char buf[10];
+  time_t tt = time(NULL);
+  struct tm Tres;
+  struct tm *pTime = localtime_r(&tt, &Tres);
+  sprintf(buf, "%2.2u:%2.2u:%2.2u", pTime->tm_hour, pTime->tm_min, pTime->tm_sec);
+
+  return buf;
+}
+
+//SMD
+// Name : DonneHeure
+// Desc : Donne l'heure locale sous forme d'un int
+//EMD
+int DonneIntHeure()
+{
+  time_t tt = time(NULL);
+  struct tm Tres;
+  struct tm *pTime = localtime_r(&tt, &Tres);
+
+  return pTime->tm_hour * 100 + pTime->tm_min;
+}
+
+//SMD
+// Name : ConvertAAAAMMJJ
+// Desc : Converti une date du format AAAAMMJJ a JJMMAAAA
+//EMD
+
+
+//SMD
+// Name : Constucteur
+// Desc : Constructeur par defaut, initialise la date avec la date du jour
+//EMD
+YmDate::YmDate()
+{
+  _nbseconds = time(NULL);
+  struct tm Tres;
+  struct tm *pTime = localtime_r(&_nbseconds, &Tres);
+  memcpy(&_datetime, pTime, sizeof(struct tm));
+  _datetime.tm_sec = 0;
+  _datetime.tm_min = 0;
+  _datetime.tm_hour = 0;
+  _nbseconds = mktime(&_datetime);
+}
+
+//SMD
+// Name : Constucteur
+// Desc : Copie constructeur, initialise la date avec la date passee en parametre
+//EMD
+YmDate::YmDate(const YmDate &aYmDate)
+{
+  _nbseconds = aYmDate._nbseconds;
+  memcpy(&_datetime, &aYmDate._datetime, sizeof(struct tm));
+}
+
+
+//SMD
+// Name : Constucteur
+// Desc : Initialise la date avec la date, au format AAAAMMJJ ou JJ/MM/AAAA, passee en parametre
+//EMD
+YmDate::YmDate(string &szAAAAMMJJ)
+{
+  memset(&_datetime, '\0', sizeof(struct tm));
+  string sub;
+  int year, month, day;
+
+  year = month = day = 0;
+  if (szAAAAMMJJ.size() == 8)
+  {
+    sub.assign(szAAAAMMJJ, 0, 4);
+    year = atoi(sub.c_str());
+    sub.assign(szAAAAMMJJ, 4, 2);
+    month = atoi(sub.c_str());
+    sub.assign(szAAAAMMJJ, 6, 2);
+    day = atoi(sub.c_str());
+  }
+  else if (szAAAAMMJJ.size() == 10)
+    {
+      sub.assign(szAAAAMMJJ, 6, 4);
+      year = atoi(sub.c_str());
+      sub.assign(szAAAAMMJJ, 3, 2);
+      month = atoi(sub.c_str());
+      sub.assign(szAAAAMMJJ, 0, 2);
+      day = atoi(sub.c_str());
+    }
+
+  if (year) year -= 1900;
+  _datetime.tm_year = year;
+
+  if (month) month -= 1;
+  _datetime.tm_mon = month;
+
+  if (!day) day = 1;
+  _datetime.tm_mday = atoi(sub.c_str());
+
+  /* Si le format de szAAAAMMJJ est incorrect on aura le 1 janvier 1900. (year = 0, month = 0, day = 1) */
+
+  _nbseconds = mktime(&_datetime);
+}
+
+//SMD
+// Name : Constucteur
+// Desc : Initialise la date à partire des valeurs annee, mois et jour passes en parametre
+//EMD
+YmDate::YmDate(int annee, int mois, int jour)
+{
+  memset (&_datetime, '\0', sizeof (struct tm));
+  if (annee > 1900)
+    _datetime.tm_year = annee - 1900;
+  if ((mois >= 1) && (mois <= 12))
+    _datetime.tm_mon = mois - 1;
+  if ((jour >= 1) && (jour <= 31))
+    _datetime.tm_mday = jour;
+  else
+    _datetime.tm_mday = 1;
+
+  _nbseconds = mktime(&_datetime);
+}
+
+//SMD
+// Name : PrintFrench
+// Desc : Retourne la date au format JJ/MM/AAAA si fullyear, JJ/MM/AA sinon (string)
+//EMD
+string &YmDate::PrintFrench(string &scible, bool fullyear /*=true*/)
+{
+  char buf[11];
+  AllPrint(buf, 1, fullyear);
+  scible = buf;
+
+  return scible;
+}
+
+//SMD
+// Name : PrintUS
+// Desc : Retourne la date au format MM/DD/YYYY si fullyear, MM/DD/YY sinon (string)
+//EMD
+string &YmDate::PrintUS(string &scible, bool fullyear /*=true*/)
+{
+  char buf[11];
+  AllPrint(buf, 2, fullyear);
+  scible = buf;
+
+  return scible;
+}
+
+//SMD
+// Name : PrintOracle
+// Desc : Retourne la date au format YYYY/MM/DD si fullyear, YY/MM/DD sinon (string)
+//EMD
+string &YmDate::PrintOracle(string &scible, bool fullyear /*=true*/)
+{
+  char buf[11];
+  AllPrint(buf, 3, fullyear);
+  scible = buf;
+
+  return scible;
+}
+
+//SMD
+// Name : PrintResaven
+// Desc : Retourne la date au format YYYYMMDD si fullyear, YYMMDD sinon (string)
+//EMD
+string &YmDate::PrintResaven(string &scible, bool fullyear /*=true*/)
+{
+  char buf[11];
+  AllPrint(buf, 4, fullyear);
+  scible = buf;
+
+  return scible;
+}
+
+//SMD
+// Name : PrintFrench
+// Desc : Retourne la date au format JJ/MM/AAAA si fullyear, JJ/MM/AA sinon (char *)
+//EMD
+char *YmDate::PrintFrench(char* sbuf, bool fullyear /*=true*/)
+{
+  return AllPrint(sbuf, 1, fullyear);
+}
+
+//SMD
+// Name : PrintUS
+// Desc : Retourne la date au format MM/DD/YYYY si fullyear, MM/DD/YY sinon (char *)
+//EMD
+char *YmDate::PrintUS(char* sbuf, bool fullyear /*=true*/)
+{
+  return AllPrint(sbuf, 2, fullyear);
+}
+
+//SMD
+// Name : PrintOracle
+// Desc : Retourne la date au format YYYY/MM/DD si fullyear, YY/MM/DD sinon (char *)
+//EMD
+char *YmDate::PrintOracle(char* sbuf, bool fullyear /*=true*/)
+{
+  return AllPrint(sbuf, 3, fullyear);
+}
+
+//SMD
+// Name : PrintResaven
+// Desc : Retourne la date au format YYYYMMDD si fullyear, YYMMDD sinon (char *)
+//EMD
+char *YmDate::PrintResaven(char* sbuf, bool fullyear /*=true*/)
+{
+  return AllPrint(sbuf, 4, fullyear);
+}
+
+//SMD
+// Name : WeekDay
+// Desc : Retourne retourn le numero du jour dans la semaine (en fonction de la position du lundi)
+//EMD
+int YmDate::WeekDay(bool bMondayFirst /*=true*/)
+{
+  int jj;
+  jj = _datetime.tm_wday;
+  if (bMondayFirst)
+    {
+      if (jj == 0)
+	return 7;
+
+      return jj;
+    }
+  else
+
+    return jj + 1;
+}
+
+//SMD
+// Name : YearDay
+// Desc : Retourne le numero du jour dans l'annee
+//EMD
+int YmDate::YearDay()
+{
+  return _datetime.tm_yday;
+}
+
+//SMD
+// Name : year
+// Desc : Retourne l'annee
+//EMD
+int YmDate::year()
+{
+  return (_datetime.tm_year + 1900);
+}
+
+//SMD
+// Name : month
+// Desc : Retourne le mois
+//EMD
+int YmDate::month()
+{
+  return (_datetime.tm_mon + 1);
+}
+
+//SMD
+// Name : day
+// Desc : Retourne le jour du mois
+//EMD
+int YmDate::day()
+{
+  return (_datetime.tm_mday);
+}
+
+//SMD
+// Name : AllPrint
+// Desc : Retourne la date en fonction du format demande (char *)
+//EMD
+char *YmDate::AllPrint(char *sbuf, int typrint, bool fullyear)
+{
+  char bufAnnee[5];
+  char bufMois[3];
+  char bufJour[3];
+
+  if (fullyear)
+    sprintf(bufAnnee, "%4.4u", _datetime.tm_year + 1900);
+  else
+    sprintf(bufAnnee, "%2.2u", _datetime.tm_year + 1900);
+
+  sprintf(bufMois, "%2.2u", _datetime.tm_mon + 1);
+  sprintf(bufJour, "%2.2u", _datetime.tm_mday);
+
+  if (typrint == 1) /* French Mode */
+    sprintf(sbuf, "%s/%s/%s", bufJour, bufMois, bufAnnee);
+  else if (typrint == 2) /* US Mode */
+    sprintf(sbuf, "%s/%s/%s", bufMois, bufJour, bufAnnee);
+  else if (typrint == 3)
+    sprintf(sbuf, "%s/%s/%s", bufAnnee, bufMois, bufJour);
+  else
+    sprintf(sbuf, "%s%s%s", bufAnnee, bufMois, bufJour);
+
+  return sbuf;
+}
+
+//SMD
+// Name : DayFrom70
+// Desc : Retourne le nombre de jour depuis 70
+//EMD
+int YmDate::DaysFrom70()
+{
+  int jjj = _nbseconds / 86400;
+  return jjj;
+}
+
+//SMD
+// Name : Operateur =
+// Desc : Operateur =
+//EMD
+YmDate &YmDate::operator=(const YmDate &aYmDate)
+{
+  _nbseconds = aYmDate._nbseconds;
+  memcpy(&_datetime, &aYmDate._datetime, sizeof(struct tm));
+  return *this;
+}
+
+//SMD
+// Name : Operateur ==
+// Desc : Operateur ==
+//EMD
+bool YmDate::operator==(const YmDate &aYmDate) const
+{
+  return ((_nbseconds / 86400) == (aYmDate._nbseconds / 86400));
+}
+
+//SMD
+// Name : Operateur !=
+// Desc : Operateur !=
+//EMD
+bool YmDate::operator!=(const YmDate &aYmDate)
+{
+  return ((_nbseconds / 86400) != (aYmDate._nbseconds / 86400));
+}
+
+//SMD
+// Name : Operateur >=
+// Desc : Operateur >=
+//EMD
+bool YmDate::operator>=(const YmDate &aYmDate)
+{
+  return ((_nbseconds / 86400) >= (aYmDate._nbseconds / 86400));
+}
+
+//SMD
+// Name : Operateur <=
+// Desc : Operateur <=
+//EMD
+bool YmDate::operator<=(const YmDate &aYmDate)
+{
+  return ((_nbseconds / 86400) <= (aYmDate._nbseconds / 86400));
+}
+
+//SMD
+// Name : Operateur >
+// Desc : Operateur >
+//EMD
+bool YmDate::operator>(const YmDate &aYmDate)
+{
+  return ((_nbseconds / 86400) > (aYmDate._nbseconds / 86400));
+}
+
+//SMD
+// Name : Operateur <
+// Desc : Operateur <
+//EMD
+bool YmDate::operator<(const YmDate &aYmDate)
+{
+  return ((_nbseconds / 86400) < (aYmDate._nbseconds / 86400));
+}
+
+//SMD
+// Name : Operateur +=
+// Desc : Operateur +=
+//EMD
+YmDate &YmDate::operator+=(int nbjour)
+{
+  _nbseconds += (nbjour * 86400);
+  struct tm Tres;
+  struct tm *pTime = localtime_r(&_nbseconds, &Tres);
+  memcpy(&_datetime, pTime, sizeof(struct tm));
+
+  return *this;
+}
+
+//SMD
+// Name : Operateur -=
+// Desc : Operateur -=
+//EMD
+YmDate &YmDate::operator-=(int nbjour)
+{
+  _nbseconds -= (nbjour * 86400);
+  struct tm Tres;
+  struct tm *pTime = localtime_r(&_nbseconds, &Tres);
+  memcpy(&_datetime, pTime, sizeof(struct tm));
+
+  return *this;
+}
+
+//SMD
+// Name : Operateur ++
+// Desc : Operateur ++
+//EMD
+YmDate &YmDate::operator++()
+{
+  _nbseconds += 86400;
+  struct tm Tres;
+  struct tm *pTime = localtime_r(&_nbseconds, &Tres);
+  memcpy(&_datetime, pTime, sizeof(struct tm));
+
+  return *this;
+}
+
+//SMD
+// Name : Operateur --
+// Desc : Operateur --
+//EMD
+YmDate &YmDate::operator--()
+{
+  _nbseconds -= 86400;
+  struct tm Tres;
+  struct tm *pTime = localtime_r(&_nbseconds, &Tres);
+  memcpy(&_datetime, pTime, sizeof(struct tm));
+
+  return *this;
+}

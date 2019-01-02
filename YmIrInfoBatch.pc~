@@ -1,0 +1,267 @@
+//## Module : YmIrInfoBatch
+//SFD
+//  Name    : YmIrInfoBatch.cpp
+//  Author  : PLF
+//  Desc    : Lecture et mise a jour de la table ym_info_batch pour key_info = KEY_INFO
+//EFD
+
+using namespace std;
+
+//## includes
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
+#include <thread.h>
+#include <iterator>
+#include <sqlca.h>
+#include <YmIrGlobal.h>
+#include <YmIrInfoBatch.h>
+
+//## Global
+extern sql_context ctxMain;
+
+//SMD
+// Name : Constructeur
+// Desc : Constructeur par defaut
+//EMD
+YmIrInfoBatch::YmIrInfoBatch()
+{
+}
+
+//SMD
+// Name : Destructeur
+// Desc : Destructeur par defaut
+//EMD
+YmIrInfoBatch::~YmIrInfoBatch()
+{
+}
+
+//SMD
+// Name : Init
+// Desc : initialisation de la map a partir de la base, 0 = OK, -1 = pas trouve
+//EMD
+int YmIrInfoBatch::init()
+{
+  int iRet = -1;
+  int iIr = 0;
+
+  EXEC SQL BEGIN DECLARE SECTION;
+  varchar vcKeyInfo[31];
+  varchar vcAssocData[31];
+  short inull_AssocData = -1;
+  EXEC SQL END DECLARE SECTION;
+    
+  EXEC SQL WHENEVER SQLERROR DO sql_error((char *)"ym_info_batch illisible", 1, sqlca.sqlerrm.sqlerrmc,
+					  sqlca.sqlerrm.sqlerrml);
+  EXEC SQL CONTEXT USE :ctxMain;
+
+  /* Recuperation de la derniere date COMPLETE du batch */
+  string key_info1((string)KEY_INFO_COMPLETE_DATE);
+  strcpy((char*) vcKeyInfo.arr, key_info1.c_str());
+  vcKeyInfo.len = key_info1.size();
+
+  EXEC SQL WHENEVER NOT FOUND CONTINUE;
+  EXEC SQL SELECT assoc_data INTO :vcAssocData:inull_AssocData
+    FROM ym_info_batch WHERE key_info= :vcKeyInfo;
+
+  string sAssocData;
+
+  if (inull_AssocData == -1)
+    return iRet;
+
+  vcAssocData.arr[vcAssocData.len] = '\0';
+  sAssocData = (char*)vcAssocData.arr;
+  _assocCompleteDate = (YmDate)sAssocData;
+
+  /* Recuperation de la date du batch CURRENT */
+  string key_info2((string)KEY_INFO_CURRENT_DATE);
+  strcpy((char*) vcKeyInfo.arr, key_info2.c_str());
+  vcKeyInfo.len = key_info2.size();
+
+  EXEC SQL WHENEVER NOT FOUND CONTINUE;
+  EXEC SQL SELECT assoc_data INTO :vcAssocData:inull_AssocData
+    FROM ym_info_batch WHERE key_info= :vcKeyInfo;
+
+  if (inull_AssocData == -1)
+    return iRet;
+
+  vcAssocData.arr[vcAssocData.len] = '\0';
+  sAssocData = (char*)vcAssocData.arr;
+  _assocCurrentDate=(YmDate)sAssocData;
+
+  /* Recuperation du Status du batch */
+  string key_info3((string)KEY_INFO_STATUS_BATCH);
+  strcpy ((char*) vcKeyInfo.arr, key_info3.c_str());
+  vcKeyInfo.len = key_info3.size();
+
+  EXEC SQL WHENEVER NOT FOUND CONTINUE;
+  EXEC SQL SELECT assoc_data INTO :vcAssocData:inull_AssocData
+    FROM ym_info_batch WHERE key_info= :vcKeyInfo;
+
+  if (inull_AssocData == -1)
+    return iRet;
+
+  vcAssocData.arr[vcAssocData.len] = '\0';
+  _assocStatusBatch=(char*)vcAssocData.arr;
+
+  iRet = 0;
+  return iRet;
+}
+
+//SMD
+// Name : incrementerAssocCompleteDate
+// Desc : Met a jour la table ym_info_batch
+//EMD
+bool YmIrInfoBatch::incrementerAssocCompleteDate()
+{
+  EXEC SQL BEGIN DECLARE SECTION;
+  varchar vcKeyInfo[31];
+  varchar vcKeyInfo1[31];
+  varchar vcUser[20];
+  EXEC SQL END DECLARE SECTION;
+
+  string key_info;
+  string key_info1;
+
+  key_info = (string)KEY_INFO_COMPLETE_DATE;
+  key_info1 = (string)KEY_INFO_CURRENT_DATE;
+
+  strcpy((char*) vcKeyInfo.arr, key_info.c_str());
+  vcKeyInfo.len = key_info.size();
+
+  strcpy((char*) vcKeyInfo1.arr, key_info1.c_str());
+  vcKeyInfo1.len = key_info1.size();
+
+  EXEC SQL CONTEXT USE :ctxMain;
+  EXEC SQL WHENEVER SQLERROR DO sql_error((char *)"ym_info_batch pb update ", 1, sqlca.sqlerrm.sqlerrmc,
+					  sqlca.sqlerrm.sqlerrml);
+
+  EXEC SQL UPDATE YM_INFO_BATCH set ASSOC_DATA = to_char(to_date(substr(assoc_data, 1, 8),'YYYYMMDD') + 1,'YYYYMMDD'),
+    posted_time = sysdate, user_id = user
+    WHERE KEY_INFO = :vcKeyInfo
+    AND to_date(substr(assoc_data, 1, 8),'YYYYMMDD') < (SELECT to_date(substr(assoc_data, 1, 8),'YYYYMMDD')
+							FROM YM_INFO_BATCH
+							WHERE KEY_INFO = :vcKeyInfo1);
+  EXEC SQL COMMIT;
+
+  if (sqlca.sqlcode<0)
+    {
+      char szMess[180];
+
+      strncpy(szMess, sqlca.sqlerrm.sqlerrmc, sqlca.sqlerrm.sqlerrml);
+      szMess[sqlca.sqlerrm.sqlerrml] = '\0';
+      YmMessLog lmess1(__FILE__, "incrementerAssocCompleteDate", PROCESS_NAME);
+      string ltext = "impossible d incrementer Assoc Complete Date ";
+      ltext += "Key Info: ";
+      ltext += key_info;
+      ltext += " ";
+      ltext += szMess;
+      lmess1.envoiMess(__LINE__, ltext, YmMessLog::ERROR);
+
+      return false;
+    }
+
+  return true;
+}
+
+//SMD
+// Name : majAssocCurrentDate
+// Desc : Met a jour la table ym_info_batch
+//EMD
+bool YmIrInfoBatch::majAssocCurrentDate(YmDate currentDate)
+{
+  EXEC SQL BEGIN DECLARE SECTION;
+  varchar vcKeyInfo[31];
+  varchar vcUser[20];
+  char cAssocCurrentDate[9];
+  EXEC SQL END DECLARE SECTION;
+
+  this->set_assocCurrentDate(currentDate);
+
+  string key_info;
+  key_info = (string)KEY_INFO_CURRENT_DATE;
+  strcpy((char*) vcKeyInfo.arr, key_info.c_str());
+  vcKeyInfo.len = key_info.size();
+  _assocCurrentDate.PrintResaven(cAssocCurrentDate, true);
+
+  EXEC SQL CONTEXT USE :ctxMain;
+  EXEC SQL WHENEVER SQLERROR DO sql_error((char *)"ym_info_batch pb update ", 1, sqlca.sqlerrm.sqlerrmc,
+					  sqlca.sqlerrm.sqlerrml);
+
+  EXEC SQL UPDATE YM_INFO_BATCH set ASSOC_DATA = to_char(to_date(:cAssocCurrentDate, 'YYYYMMDD'), 'YYYYMMDD'),
+    posted_time = sysdate, user_id = user
+    WHERE KEY_INFO = :vcKeyInfo;
+  EXEC SQL COMMIT;
+
+  if (sqlca.sqlcode < 0)
+    {
+      char szMess[180];
+
+      strncpy(szMess, sqlca.sqlerrm.sqlerrmc, sqlca.sqlerrm.sqlerrml);
+      szMess[sqlca.sqlerrm.sqlerrml] = '\0';
+      YmMessLog lmess1( __FILE__, "majAssocCurrentDate", PROCESS_NAME);
+      string ltext = "impossible de mettre a jour Assoc Current Date ";
+      ltext += "Key Info: ";
+      ltext += key_info;
+      ltext += " ";
+      ltext += szMess;
+      lmess1.envoiMess(__LINE__, ltext, YmMessLog::ERROR);
+
+      return false;
+    }
+
+  return true;
+}
+
+//SMD
+// Name : majAssocStatusBatch
+// Desc : Met a jour la table ym_info_batch
+//EMD
+bool YmIrInfoBatch::majAssocStatusBatch(string statusBatch)
+{
+  EXEC SQL BEGIN DECLARE SECTION;
+  varchar vcKeyInfo[31];
+  varchar vcUser[20];
+  varchar vcStatusBatch[2];
+  EXEC SQL END DECLARE SECTION;
+
+  this->set_assocStatusBatch(statusBatch);
+
+  string key_info;
+  key_info = (string)KEY_INFO_STATUS_BATCH;
+  strcpy((char*) vcKeyInfo.arr, key_info.c_str());
+  vcKeyInfo.len = key_info.size();
+  strcpy((char *)vcStatusBatch.arr, _assocStatusBatch.c_str());
+  vcStatusBatch.len = _assocStatusBatch.size();
+
+  EXEC SQL CONTEXT USE :ctxMain;
+  EXEC SQL WHENEVER SQLERROR DO sql_error((char *)"ym_info_batch pb update ", 1, sqlca.sqlerrm.sqlerrmc,
+					  sqlca.sqlerrm.sqlerrml);
+
+  EXEC SQL UPDATE YM_INFO_BATCH set ASSOC_DATA = :vcStatusBatch,
+    posted_time = sysdate, user_id = user
+    WHERE KEY_INFO = :vcKeyInfo;
+  EXEC SQL COMMIT;
+
+  if (sqlca.sqlcode < 0)
+    {
+      char szMess[180];
+
+      strncpy(szMess, sqlca.sqlerrm.sqlerrmc, sqlca.sqlerrm.sqlerrml);
+      szMess[sqlca.sqlerrm.sqlerrml]='\0';
+      YmMessLog lmess1( __FILE__, "majAssocStatusBatch", PROCESS_NAME);
+      string ltext = "impossible de mettre a jour Assoc Status Batch ";
+      ltext += "Key Info: ";
+      ltext += key_info;
+      ltext += " ";
+      ltext += szMess;
+      lmess1.envoiMess(__LINE__, ltext, YmMessLog::ERROR);
+
+      return false;
+   }
+
+  return true;
+}
+
+

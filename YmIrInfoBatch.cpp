@@ -1,0 +1,787 @@
+
+/* Result Sets Interface */
+#ifndef SQL_CRSR
+#  define SQL_CRSR
+  struct sql_cursor
+  {
+    unsigned int curocn;
+    void *ptr1;
+    void *ptr2;
+    unsigned int magic;
+  };
+  typedef struct sql_cursor sql_cursor;
+  typedef struct sql_cursor SQL_CURSOR;
+#endif /* SQL_CRSR */
+
+/* Thread Safety */
+typedef void * sql_context;
+typedef void * SQL_CONTEXT;
+
+/* Object support */
+struct sqltvn
+{
+  unsigned char *tvnvsn; 
+  unsigned short tvnvsnl; 
+  unsigned char *tvnnm;
+  unsigned short tvnnml; 
+  unsigned char *tvnsnm;
+  unsigned short tvnsnml;
+};
+typedef struct sqltvn sqltvn;
+
+struct sqladts
+{
+  unsigned int adtvsn; 
+  unsigned short adtmode; 
+  unsigned short adtnum;  
+  sqltvn adttvn[1];       
+};
+typedef struct sqladts sqladts;
+
+static struct sqladts sqladt = {
+  1,1,0,
+};
+
+/* Binding to PL/SQL Records */
+struct sqltdss
+{
+  unsigned int tdsvsn; 
+  unsigned short tdsnum; 
+  unsigned char *tdsval[1]; 
+};
+typedef struct sqltdss sqltdss;
+static struct sqltdss sqltds =
+{
+  1,
+  0,
+};
+
+/* File name & Package Name */
+struct sqlcxp
+{
+  unsigned short fillen;
+           char  filnam[17];
+};
+static const struct sqlcxp sqlfpn =
+{
+    16,
+    "YmIrInfoBatch.pc"
+};
+
+
+static unsigned int sqlctx = 5414603;
+
+
+static struct sqlexd {
+   unsigned long  sqlvsn;
+   unsigned int   arrsiz;
+   unsigned int   iters;
+   unsigned int   offset;
+   unsigned short selerr;
+   unsigned short sqlety;
+   unsigned int   occurs;
+      const short *cud;
+   unsigned char  *sqlest;
+      const char  *stmt;
+   sqladts *sqladtp;
+   sqltdss *sqltdsp;
+   unsigned char  **sqphsv;
+   unsigned long  *sqphsl;
+            int   *sqphss;
+            short **sqpind;
+            int   *sqpins;
+   unsigned long  *sqparm;
+   unsigned long  **sqparc;
+   unsigned short  *sqpadto;
+   unsigned short  *sqptdso;
+   unsigned int   sqlcmax;
+   unsigned int   sqlcmin;
+   unsigned int   sqlcincr;
+   unsigned int   sqlctimeout;
+   unsigned int   sqlcnowait;
+            int   sqfoff;
+   unsigned int   sqcmod;
+   unsigned int   sqfmod;
+   unsigned char  *sqhstv[2];
+   unsigned long  sqhstl[2];
+            int   sqhsts[2];
+            short *sqindv[2];
+            int   sqinds[2];
+   unsigned long  sqharm[2];
+   unsigned long  *sqharc[2];
+   unsigned short  sqadto[2];
+   unsigned short  sqtdso[2];
+} sqlstm = {12,2};
+
+// Prototypes
+extern "C" {
+  void sqlcxt (void **, unsigned int *,
+               struct sqlexd *, const struct sqlcxp *);
+  void sqlcx2t(void **, unsigned int *,
+               struct sqlexd *, const struct sqlcxp *);
+  void sqlbuft(void **, char *);
+  void sqlgs2t(void **, char *);
+  void sqlorat(void **, unsigned int *, void *);
+}
+
+// Forms Interface
+static const int IAPSUCC = 0;
+static const int IAPFAIL = 1403;
+static const int IAPFTL  = 535;
+extern "C" { void sqliem(unsigned char *, signed int *); }
+
+typedef struct { unsigned short len; unsigned char arr[1]; } VARCHAR;
+typedef struct { unsigned short len; unsigned char arr[1]; } varchar;
+
+/* cud (compilation unit data) array */
+static const short sqlcud0[] =
+{12,4130,871,0,0,
+5,0,0,1,70,0,4,65,0,0,2,1,0,1,0,2,9,0,0,1,9,0,0,
+28,0,0,2,70,0,4,83,0,0,2,1,0,1,0,2,9,0,0,1,9,0,0,
+51,0,0,3,70,0,4,99,0,0,2,1,0,1,0,2,9,0,0,1,9,0,0,
+74,0,0,4,351,0,5,140,0,0,2,2,0,1,0,1,9,0,0,1,9,0,0,
+97,0,0,5,0,0,29,146,0,0,0,0,0,1,0,
+112,0,0,6,154,0,5,192,0,0,2,2,0,1,0,1,97,0,0,1,9,0,0,
+135,0,0,7,0,0,29,195,0,0,0,0,0,1,0,
+150,0,0,8,104,0,5,242,0,0,2,2,0,1,0,1,9,0,0,1,9,0,0,
+173,0,0,9,0,0,29,245,0,0,0,0,0,1,0,
+};
+
+
+//## Module : YmIrInfoBatch
+//SFD
+//  Name    : YmIrInfoBatch.cpp
+//  Author  : PLF
+//  Desc    : Lecture et mise a jour de la table ym_info_batch pour key_info = KEY_INFO
+//EFD
+
+using namespace std;
+
+//## includes
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
+#include <thread.h>
+#include <iterator>
+#include <sqlca.h>
+#include "YmIrGlobal.h"
+#include "YmIrInfoBatch.h"
+
+//## Global
+extern sql_context ctxMain;
+
+//SMD
+// Name : Constructeur
+// Desc : Constructeur par defaut
+//EMD
+YmIrInfoBatch::YmIrInfoBatch()
+{
+}
+
+//SMD
+// Name : Destructeur
+// Desc : Destructeur par defaut
+//EMD
+YmIrInfoBatch::~YmIrInfoBatch()
+{
+}
+
+//SMD
+// Name : Init
+// Desc : initialisation de la map a partir de la base, 0 = OK, -1 = pas trouve
+//EMD
+int YmIrInfoBatch::init()
+{
+  int iRet = -1;
+  int iIr = 0;
+
+  /* EXEC SQL BEGIN DECLARE SECTION; */ 
+
+  /* varchar vcKeyInfo[31]; */ 
+struct { unsigned short len; unsigned char arr[31]; } vcKeyInfo;
+
+  /* varchar vcAssocData[31]; */ 
+struct { unsigned short len; unsigned char arr[31]; } vcAssocData;
+
+  short inull_AssocData = -1;
+  /* EXEC SQL END DECLARE SECTION; */ 
+
+    
+  /* EXEC SQL WHENEVER SQLERROR DO sql_error((char *)"ym_info_batch illisible", 1, sqlca.sqlerrm.sqlerrmc,
+					  sqlca.sqlerrm.sqlerrml); */ 
+
+  /* EXEC SQL CONTEXT USE :ctxMain; */ 
+
+
+  /* Recuperation de la derniere date COMPLETE du batch */
+  string key_info1((string)KEY_INFO_COMPLETE_DATE);
+  strcpy((char*) vcKeyInfo.arr, key_info1.c_str());
+  vcKeyInfo.len = key_info1.size();
+
+  /* EXEC SQL WHENEVER NOT FOUND CONTINUE; */ 
+
+  /* EXEC SQL SELECT assoc_data INTO :vcAssocData:inull_AssocData
+    FROM ym_info_batch WHERE key_info= :vcKeyInfo; */ 
+
+{
+  struct sqlexd sqlstm;
+  sqlstm.sqlvsn = 12;
+  sqlstm.arrsiz = 2;
+  sqlstm.sqladtp = &sqladt;
+  sqlstm.sqltdsp = &sqltds;
+  sqlstm.stmt = "select assoc_data INTO :b0:b1 FROM ym_info_batch WHERE key\
+_info = :b2 ";
+  sqlstm.iters = (unsigned int  )1;
+  sqlstm.offset = (unsigned int  )5;
+  sqlstm.selerr = (unsigned short)1;
+  sqlstm.cud = sqlcud0;
+  sqlstm.sqlest = (unsigned char  *)&sqlca;
+  sqlstm.sqlety = (unsigned short)4352;
+  sqlstm.occurs = (unsigned int  )0;
+  sqlstm.sqhstv[0] = (unsigned char  *)&vcAssocData;
+  sqlstm.sqhstl[0] = (unsigned long )33;
+  sqlstm.sqhsts[0] = (         int  )0;
+  sqlstm.sqindv[0] = (         short *)&inull_AssocData;
+  sqlstm.sqinds[0] = (         int  )0;
+  sqlstm.sqharm[0] = (unsigned long )0;
+  sqlstm.sqadto[0] = (unsigned short )0;
+  sqlstm.sqtdso[0] = (unsigned short )0;
+  sqlstm.sqhstv[1] = (unsigned char  *)&vcKeyInfo;
+  sqlstm.sqhstl[1] = (unsigned long )33;
+  sqlstm.sqhsts[1] = (         int  )0;
+  sqlstm.sqindv[1] = (         short *)0;
+  sqlstm.sqinds[1] = (         int  )0;
+  sqlstm.sqharm[1] = (unsigned long )0;
+  sqlstm.sqadto[1] = (unsigned short )0;
+  sqlstm.sqtdso[1] = (unsigned short )0;
+  sqlstm.sqphsv = sqlstm.sqhstv;
+  sqlstm.sqphsl = sqlstm.sqhstl;
+  sqlstm.sqphss = sqlstm.sqhsts;
+  sqlstm.sqpind = sqlstm.sqindv;
+  sqlstm.sqpins = sqlstm.sqinds;
+  sqlstm.sqparm = sqlstm.sqharm;
+  sqlstm.sqparc = sqlstm.sqharc;
+  sqlstm.sqpadto = sqlstm.sqadto;
+  sqlstm.sqptdso = sqlstm.sqtdso;
+  sqlcxt(&ctxMain, &sqlctx, &sqlstm, &sqlfpn);
+  if (sqlca.sqlcode < 0) sql_error("ym_info_batch illisible",1,((sqlca.sqlerrm).sqlerrmc),((sqlca.sqlerrm).sqlerrml));
+}
+
+
+
+  string sAssocData;
+
+  if (inull_AssocData == -1)
+    return iRet;
+
+  vcAssocData.arr[vcAssocData.len] = '\0';
+  sAssocData = (char*)vcAssocData.arr;
+  _assocCompleteDate = (YmDate)sAssocData;
+
+  /* Recuperation de la date du batch CURRENT */
+  string key_info2((string)KEY_INFO_CURRENT_DATE);
+  strcpy((char*) vcKeyInfo.arr, key_info2.c_str());
+  vcKeyInfo.len = key_info2.size();
+
+  /* EXEC SQL WHENEVER NOT FOUND CONTINUE; */ 
+
+  /* EXEC SQL SELECT assoc_data INTO :vcAssocData:inull_AssocData
+    FROM ym_info_batch WHERE key_info= :vcKeyInfo; */ 
+
+{
+  struct sqlexd sqlstm;
+  sqlstm.sqlvsn = 12;
+  sqlstm.arrsiz = 2;
+  sqlstm.sqladtp = &sqladt;
+  sqlstm.sqltdsp = &sqltds;
+  sqlstm.stmt = "select assoc_data INTO :b0:b1 FROM ym_info_batch WHERE key\
+_info = :b2 ";
+  sqlstm.iters = (unsigned int  )1;
+  sqlstm.offset = (unsigned int  )28;
+  sqlstm.selerr = (unsigned short)1;
+  sqlstm.cud = sqlcud0;
+  sqlstm.sqlest = (unsigned char  *)&sqlca;
+  sqlstm.sqlety = (unsigned short)4352;
+  sqlstm.occurs = (unsigned int  )0;
+  sqlstm.sqhstv[0] = (unsigned char  *)&vcAssocData;
+  sqlstm.sqhstl[0] = (unsigned long )33;
+  sqlstm.sqhsts[0] = (         int  )0;
+  sqlstm.sqindv[0] = (         short *)&inull_AssocData;
+  sqlstm.sqinds[0] = (         int  )0;
+  sqlstm.sqharm[0] = (unsigned long )0;
+  sqlstm.sqadto[0] = (unsigned short )0;
+  sqlstm.sqtdso[0] = (unsigned short )0;
+  sqlstm.sqhstv[1] = (unsigned char  *)&vcKeyInfo;
+  sqlstm.sqhstl[1] = (unsigned long )33;
+  sqlstm.sqhsts[1] = (         int  )0;
+  sqlstm.sqindv[1] = (         short *)0;
+  sqlstm.sqinds[1] = (         int  )0;
+  sqlstm.sqharm[1] = (unsigned long )0;
+  sqlstm.sqadto[1] = (unsigned short )0;
+  sqlstm.sqtdso[1] = (unsigned short )0;
+  sqlstm.sqphsv = sqlstm.sqhstv;
+  sqlstm.sqphsl = sqlstm.sqhstl;
+  sqlstm.sqphss = sqlstm.sqhsts;
+  sqlstm.sqpind = sqlstm.sqindv;
+  sqlstm.sqpins = sqlstm.sqinds;
+  sqlstm.sqparm = sqlstm.sqharm;
+  sqlstm.sqparc = sqlstm.sqharc;
+  sqlstm.sqpadto = sqlstm.sqadto;
+  sqlstm.sqptdso = sqlstm.sqtdso;
+  sqlcxt(&ctxMain, &sqlctx, &sqlstm, &sqlfpn);
+  if (sqlca.sqlcode < 0) sql_error("ym_info_batch illisible",1,((sqlca.sqlerrm).sqlerrmc),((sqlca.sqlerrm).sqlerrml));
+}
+
+
+
+  if (inull_AssocData == -1)
+    return iRet;
+
+  vcAssocData.arr[vcAssocData.len] = '\0';
+  sAssocData = (char*)vcAssocData.arr;
+  _assocCurrentDate=(YmDate)sAssocData;
+
+  /* Recuperation du Status du batch */
+  string key_info3((string)KEY_INFO_STATUS_BATCH);
+  strcpy ((char*) vcKeyInfo.arr, key_info3.c_str());
+  vcKeyInfo.len = key_info3.size();
+
+  /* EXEC SQL WHENEVER NOT FOUND CONTINUE; */ 
+
+  /* EXEC SQL SELECT assoc_data INTO :vcAssocData:inull_AssocData
+    FROM ym_info_batch WHERE key_info= :vcKeyInfo; */ 
+
+{
+  struct sqlexd sqlstm;
+  sqlstm.sqlvsn = 12;
+  sqlstm.arrsiz = 2;
+  sqlstm.sqladtp = &sqladt;
+  sqlstm.sqltdsp = &sqltds;
+  sqlstm.stmt = "select assoc_data INTO :b0:b1 FROM ym_info_batch WHERE key\
+_info = :b2 ";
+  sqlstm.iters = (unsigned int  )1;
+  sqlstm.offset = (unsigned int  )51;
+  sqlstm.selerr = (unsigned short)1;
+  sqlstm.cud = sqlcud0;
+  sqlstm.sqlest = (unsigned char  *)&sqlca;
+  sqlstm.sqlety = (unsigned short)4352;
+  sqlstm.occurs = (unsigned int  )0;
+  sqlstm.sqhstv[0] = (unsigned char  *)&vcAssocData;
+  sqlstm.sqhstl[0] = (unsigned long )33;
+  sqlstm.sqhsts[0] = (         int  )0;
+  sqlstm.sqindv[0] = (         short *)&inull_AssocData;
+  sqlstm.sqinds[0] = (         int  )0;
+  sqlstm.sqharm[0] = (unsigned long )0;
+  sqlstm.sqadto[0] = (unsigned short )0;
+  sqlstm.sqtdso[0] = (unsigned short )0;
+  sqlstm.sqhstv[1] = (unsigned char  *)&vcKeyInfo;
+  sqlstm.sqhstl[1] = (unsigned long )33;
+  sqlstm.sqhsts[1] = (         int  )0;
+  sqlstm.sqindv[1] = (         short *)0;
+  sqlstm.sqinds[1] = (         int  )0;
+  sqlstm.sqharm[1] = (unsigned long )0;
+  sqlstm.sqadto[1] = (unsigned short )0;
+  sqlstm.sqtdso[1] = (unsigned short )0;
+  sqlstm.sqphsv = sqlstm.sqhstv;
+  sqlstm.sqphsl = sqlstm.sqhstl;
+  sqlstm.sqphss = sqlstm.sqhsts;
+  sqlstm.sqpind = sqlstm.sqindv;
+  sqlstm.sqpins = sqlstm.sqinds;
+  sqlstm.sqparm = sqlstm.sqharm;
+  sqlstm.sqparc = sqlstm.sqharc;
+  sqlstm.sqpadto = sqlstm.sqadto;
+  sqlstm.sqptdso = sqlstm.sqtdso;
+  sqlcxt(&ctxMain, &sqlctx, &sqlstm, &sqlfpn);
+  if (sqlca.sqlcode < 0) sql_error("ym_info_batch illisible",1,((sqlca.sqlerrm).sqlerrmc),((sqlca.sqlerrm).sqlerrml));
+}
+
+
+
+  if (inull_AssocData == -1)
+    return iRet;
+
+  vcAssocData.arr[vcAssocData.len] = '\0';
+  _assocStatusBatch=(char*)vcAssocData.arr;
+
+  iRet = 0;
+  return iRet;
+}
+
+//SMD
+// Name : incrementerAssocCompleteDate
+// Desc : Met a jour la table ym_info_batch
+//EMD
+bool YmIrInfoBatch::incrementerAssocCompleteDate()
+{
+  /* EXEC SQL BEGIN DECLARE SECTION; */ 
+
+  /* varchar vcKeyInfo[31]; */ 
+struct { unsigned short len; unsigned char arr[31]; } vcKeyInfo;
+
+  /* varchar vcKeyInfo1[31]; */ 
+struct { unsigned short len; unsigned char arr[31]; } vcKeyInfo1;
+
+  /* varchar vcUser[20]; */ 
+struct { unsigned short len; unsigned char arr[20]; } vcUser;
+
+  /* EXEC SQL END DECLARE SECTION; */ 
+
+
+  string key_info;
+  string key_info1;
+
+  key_info = (string)KEY_INFO_COMPLETE_DATE;
+  key_info1 = (string)KEY_INFO_CURRENT_DATE;
+
+  strcpy((char*) vcKeyInfo.arr, key_info.c_str());
+  vcKeyInfo.len = key_info.size();
+
+  strcpy((char*) vcKeyInfo1.arr, key_info1.c_str());
+  vcKeyInfo1.len = key_info1.size();
+
+  /* EXEC SQL CONTEXT USE :ctxMain; */ 
+
+  /* EXEC SQL WHENEVER SQLERROR DO sql_error((char *)"ym_info_batch pb update ", 1, sqlca.sqlerrm.sqlerrmc,
+					  sqlca.sqlerrm.sqlerrml); */ 
+
+
+  /* EXEC SQL UPDATE YM_INFO_BATCH set ASSOC_DATA = to_char(to_date(substr(assoc_data, 1, 8),'YYYYMMDD') + 1,'YYYYMMDD'),
+    posted_time = sysdate, user_id = user
+    WHERE KEY_INFO = :vcKeyInfo
+    AND to_date(substr(assoc_data, 1, 8),'YYYYMMDD') < (SELECT to_date(substr(assoc_data, 1, 8),'YYYYMMDD')
+							FROM YM_INFO_BATCH
+							WHERE KEY_INFO = :vcKeyInfo1); */ 
+
+{
+  struct sqlexd sqlstm;
+  sqlstm.sqlvsn = 12;
+  sqlstm.arrsiz = 2;
+  sqlstm.sqladtp = &sqladt;
+  sqlstm.sqltdsp = &sqltds;
+  sqlstm.stmt = "update YM_INFO_BATCH set ASSOC_DATA = to_char ( to_date ( \
+substr ( assoc_data , 1 , 8 ) , 'YYYYMMDD' ) + 1 , 'YYYYMMDD' ) , posted_time\
+ = sysdate , user_id = user WHERE KEY_INFO = :b0 AND to_date ( substr ( assoc\
+_data , 1 , 8 ) , 'YYYYMMDD' ) < ( SELECT to_date ( substr ( assoc_data , 1 ,\
+ 8 ) , 'YYYYMMDD' ) FROM YM_INFO_BATCH WHERE KEY_INFO = :b1 ) ";
+  sqlstm.iters = (unsigned int  )1;
+  sqlstm.offset = (unsigned int  )74;
+  sqlstm.cud = sqlcud0;
+  sqlstm.sqlest = (unsigned char  *)&sqlca;
+  sqlstm.sqlety = (unsigned short)4352;
+  sqlstm.occurs = (unsigned int  )0;
+  sqlstm.sqhstv[0] = (unsigned char  *)&vcKeyInfo;
+  sqlstm.sqhstl[0] = (unsigned long )33;
+  sqlstm.sqhsts[0] = (         int  )0;
+  sqlstm.sqindv[0] = (         short *)0;
+  sqlstm.sqinds[0] = (         int  )0;
+  sqlstm.sqharm[0] = (unsigned long )0;
+  sqlstm.sqadto[0] = (unsigned short )0;
+  sqlstm.sqtdso[0] = (unsigned short )0;
+  sqlstm.sqhstv[1] = (unsigned char  *)&vcKeyInfo1;
+  sqlstm.sqhstl[1] = (unsigned long )33;
+  sqlstm.sqhsts[1] = (         int  )0;
+  sqlstm.sqindv[1] = (         short *)0;
+  sqlstm.sqinds[1] = (         int  )0;
+  sqlstm.sqharm[1] = (unsigned long )0;
+  sqlstm.sqadto[1] = (unsigned short )0;
+  sqlstm.sqtdso[1] = (unsigned short )0;
+  sqlstm.sqphsv = sqlstm.sqhstv;
+  sqlstm.sqphsl = sqlstm.sqhstl;
+  sqlstm.sqphss = sqlstm.sqhsts;
+  sqlstm.sqpind = sqlstm.sqindv;
+  sqlstm.sqpins = sqlstm.sqinds;
+  sqlstm.sqparm = sqlstm.sqharm;
+  sqlstm.sqparc = sqlstm.sqharc;
+  sqlstm.sqpadto = sqlstm.sqadto;
+  sqlstm.sqptdso = sqlstm.sqtdso;
+  sqlcxt(&ctxMain, &sqlctx, &sqlstm, &sqlfpn);
+  if (sqlca.sqlcode < 0) sql_error("ym_info_batch pb update ",1,((sqlca.sqlerrm).sqlerrmc),((sqlca.sqlerrm).sqlerrml));
+}
+
+
+  /* EXEC SQL COMMIT; */ 
+
+{
+  struct sqlexd sqlstm;
+  sqlstm.sqlvsn = 12;
+  sqlstm.arrsiz = 2;
+  sqlstm.sqladtp = &sqladt;
+  sqlstm.sqltdsp = &sqltds;
+  sqlstm.iters = (unsigned int  )1;
+  sqlstm.offset = (unsigned int  )97;
+  sqlstm.cud = sqlcud0;
+  sqlstm.sqlest = (unsigned char  *)&sqlca;
+  sqlstm.sqlety = (unsigned short)4352;
+  sqlstm.occurs = (unsigned int  )0;
+  sqlcxt(&ctxMain, &sqlctx, &sqlstm, &sqlfpn);
+  if (sqlca.sqlcode < 0) sql_error("ym_info_batch pb update ",1,((sqlca.sqlerrm).sqlerrmc),((sqlca.sqlerrm).sqlerrml));
+}
+
+
+
+  if (sqlca.sqlcode<0)
+    {
+      char szMess[180];
+
+      strncpy(szMess, sqlca.sqlerrm.sqlerrmc, sqlca.sqlerrm.sqlerrml);
+      szMess[sqlca.sqlerrm.sqlerrml] = '\0';
+      YmMessLog lmess1(__FILE__, "incrementerAssocCompleteDate", PROCESS_NAME);
+      string ltext = "impossible d incrementer Assoc Complete Date ";
+      ltext += "Key Info: ";
+      ltext += key_info;
+      ltext += " ";
+      ltext += szMess;
+      lmess1.envoiMess(__LINE__, ltext, YmMessLog::ERROR);
+
+      return false;
+    }
+
+  return true;
+}
+
+//SMD
+// Name : majAssocCurrentDate
+// Desc : Met a jour la table ym_info_batch
+//EMD
+bool YmIrInfoBatch::majAssocCurrentDate(YmDate currentDate)
+{
+  /* EXEC SQL BEGIN DECLARE SECTION; */ 
+
+  /* varchar vcKeyInfo[31]; */ 
+struct { unsigned short len; unsigned char arr[31]; } vcKeyInfo;
+
+  /* varchar vcUser[20]; */ 
+struct { unsigned short len; unsigned char arr[20]; } vcUser;
+
+  char cAssocCurrentDate[9];
+  /* EXEC SQL END DECLARE SECTION; */ 
+
+
+  this->set_assocCurrentDate(currentDate);
+
+  string key_info;
+  key_info = (string)KEY_INFO_CURRENT_DATE;
+  strcpy((char*) vcKeyInfo.arr, key_info.c_str());
+  vcKeyInfo.len = key_info.size();
+  _assocCurrentDate.PrintResaven(cAssocCurrentDate, true);
+
+  /* EXEC SQL CONTEXT USE :ctxMain; */ 
+
+  /* EXEC SQL WHENEVER SQLERROR DO sql_error((char *)"ym_info_batch pb update ", 1, sqlca.sqlerrm.sqlerrmc,
+					  sqlca.sqlerrm.sqlerrml); */ 
+
+
+  /* EXEC SQL UPDATE YM_INFO_BATCH set ASSOC_DATA = to_char(to_date(:cAssocCurrentDate, 'YYYYMMDD'), 'YYYYMMDD'),
+    posted_time = sysdate, user_id = user
+    WHERE KEY_INFO = :vcKeyInfo; */ 
+
+{
+  struct sqlexd sqlstm;
+  sqlstm.sqlvsn = 12;
+  sqlstm.arrsiz = 2;
+  sqlstm.sqladtp = &sqladt;
+  sqlstm.sqltdsp = &sqltds;
+  sqlstm.stmt = "update YM_INFO_BATCH set ASSOC_DATA = to_char ( to_date ( \
+:b0 , 'YYYYMMDD' ) , 'YYYYMMDD' ) , posted_time = sysdate , user_id = user WH\
+ERE KEY_INFO = :b1 ";
+  sqlstm.iters = (unsigned int  )1;
+  sqlstm.offset = (unsigned int  )112;
+  sqlstm.cud = sqlcud0;
+  sqlstm.sqlest = (unsigned char  *)&sqlca;
+  sqlstm.sqlety = (unsigned short)4352;
+  sqlstm.occurs = (unsigned int  )0;
+  sqlstm.sqhstv[0] = (unsigned char  *)cAssocCurrentDate;
+  sqlstm.sqhstl[0] = (unsigned long )9;
+  sqlstm.sqhsts[0] = (         int  )0;
+  sqlstm.sqindv[0] = (         short *)0;
+  sqlstm.sqinds[0] = (         int  )0;
+  sqlstm.sqharm[0] = (unsigned long )0;
+  sqlstm.sqadto[0] = (unsigned short )0;
+  sqlstm.sqtdso[0] = (unsigned short )0;
+  sqlstm.sqhstv[1] = (unsigned char  *)&vcKeyInfo;
+  sqlstm.sqhstl[1] = (unsigned long )33;
+  sqlstm.sqhsts[1] = (         int  )0;
+  sqlstm.sqindv[1] = (         short *)0;
+  sqlstm.sqinds[1] = (         int  )0;
+  sqlstm.sqharm[1] = (unsigned long )0;
+  sqlstm.sqadto[1] = (unsigned short )0;
+  sqlstm.sqtdso[1] = (unsigned short )0;
+  sqlstm.sqphsv = sqlstm.sqhstv;
+  sqlstm.sqphsl = sqlstm.sqhstl;
+  sqlstm.sqphss = sqlstm.sqhsts;
+  sqlstm.sqpind = sqlstm.sqindv;
+  sqlstm.sqpins = sqlstm.sqinds;
+  sqlstm.sqparm = sqlstm.sqharm;
+  sqlstm.sqparc = sqlstm.sqharc;
+  sqlstm.sqpadto = sqlstm.sqadto;
+  sqlstm.sqptdso = sqlstm.sqtdso;
+  sqlcxt(&ctxMain, &sqlctx, &sqlstm, &sqlfpn);
+  if (sqlca.sqlcode < 0) sql_error("ym_info_batch pb update ",1,((sqlca.sqlerrm).sqlerrmc),((sqlca.sqlerrm).sqlerrml));
+}
+
+
+  /* EXEC SQL COMMIT; */ 
+
+{
+  struct sqlexd sqlstm;
+  sqlstm.sqlvsn = 12;
+  sqlstm.arrsiz = 2;
+  sqlstm.sqladtp = &sqladt;
+  sqlstm.sqltdsp = &sqltds;
+  sqlstm.iters = (unsigned int  )1;
+  sqlstm.offset = (unsigned int  )135;
+  sqlstm.cud = sqlcud0;
+  sqlstm.sqlest = (unsigned char  *)&sqlca;
+  sqlstm.sqlety = (unsigned short)4352;
+  sqlstm.occurs = (unsigned int  )0;
+  sqlcxt(&ctxMain, &sqlctx, &sqlstm, &sqlfpn);
+  if (sqlca.sqlcode < 0) sql_error("ym_info_batch pb update ",1,((sqlca.sqlerrm).sqlerrmc),((sqlca.sqlerrm).sqlerrml));
+}
+
+
+
+  if (sqlca.sqlcode < 0)
+    {
+      char szMess[180];
+
+      strncpy(szMess, sqlca.sqlerrm.sqlerrmc, sqlca.sqlerrm.sqlerrml);
+      szMess[sqlca.sqlerrm.sqlerrml] = '\0';
+      YmMessLog lmess1( __FILE__, "majAssocCurrentDate", PROCESS_NAME);
+      string ltext = "impossible de mettre a jour Assoc Current Date ";
+      ltext += "Key Info: ";
+      ltext += key_info;
+      ltext += " ";
+      ltext += szMess;
+      lmess1.envoiMess(__LINE__, ltext, YmMessLog::ERROR);
+
+      return false;
+    }
+
+  return true;
+}
+
+//SMD
+// Name : majAssocStatusBatch
+// Desc : Met a jour la table ym_info_batch
+//EMD
+bool YmIrInfoBatch::majAssocStatusBatch(string statusBatch)
+{
+  /* EXEC SQL BEGIN DECLARE SECTION; */ 
+
+  /* varchar vcKeyInfo[31]; */ 
+struct { unsigned short len; unsigned char arr[31]; } vcKeyInfo;
+
+  /* varchar vcUser[20]; */ 
+struct { unsigned short len; unsigned char arr[20]; } vcUser;
+
+  /* varchar vcStatusBatch[2]; */ 
+struct { unsigned short len; unsigned char arr[2]; } vcStatusBatch;
+
+  /* EXEC SQL END DECLARE SECTION; */ 
+
+
+  this->set_assocStatusBatch(statusBatch);
+
+  string key_info;
+  key_info = (string)KEY_INFO_STATUS_BATCH;
+  strcpy((char*) vcKeyInfo.arr, key_info.c_str());
+  vcKeyInfo.len = key_info.size();
+  strcpy((char *)vcStatusBatch.arr, _assocStatusBatch.c_str());
+  vcStatusBatch.len = _assocStatusBatch.size();
+
+  /* EXEC SQL CONTEXT USE :ctxMain; */ 
+
+  /* EXEC SQL WHENEVER SQLERROR DO sql_error((char *)"ym_info_batch pb update ", 1, sqlca.sqlerrm.sqlerrmc,
+					  sqlca.sqlerrm.sqlerrml); */ 
+
+
+  /* EXEC SQL UPDATE YM_INFO_BATCH set ASSOC_DATA = :vcStatusBatch,
+    posted_time = sysdate, user_id = user
+    WHERE KEY_INFO = :vcKeyInfo; */ 
+
+{
+  struct sqlexd sqlstm;
+  sqlstm.sqlvsn = 12;
+  sqlstm.arrsiz = 2;
+  sqlstm.sqladtp = &sqladt;
+  sqlstm.sqltdsp = &sqltds;
+  sqlstm.stmt = "update YM_INFO_BATCH set ASSOC_DATA = :b0 , posted_time = \
+sysdate , user_id = user WHERE KEY_INFO = :b1 ";
+  sqlstm.iters = (unsigned int  )1;
+  sqlstm.offset = (unsigned int  )150;
+  sqlstm.cud = sqlcud0;
+  sqlstm.sqlest = (unsigned char  *)&sqlca;
+  sqlstm.sqlety = (unsigned short)4352;
+  sqlstm.occurs = (unsigned int  )0;
+  sqlstm.sqhstv[0] = (unsigned char  *)&vcStatusBatch;
+  sqlstm.sqhstl[0] = (unsigned long )4;
+  sqlstm.sqhsts[0] = (         int  )0;
+  sqlstm.sqindv[0] = (         short *)0;
+  sqlstm.sqinds[0] = (         int  )0;
+  sqlstm.sqharm[0] = (unsigned long )0;
+  sqlstm.sqadto[0] = (unsigned short )0;
+  sqlstm.sqtdso[0] = (unsigned short )0;
+  sqlstm.sqhstv[1] = (unsigned char  *)&vcKeyInfo;
+  sqlstm.sqhstl[1] = (unsigned long )33;
+  sqlstm.sqhsts[1] = (         int  )0;
+  sqlstm.sqindv[1] = (         short *)0;
+  sqlstm.sqinds[1] = (         int  )0;
+  sqlstm.sqharm[1] = (unsigned long )0;
+  sqlstm.sqadto[1] = (unsigned short )0;
+  sqlstm.sqtdso[1] = (unsigned short )0;
+  sqlstm.sqphsv = sqlstm.sqhstv;
+  sqlstm.sqphsl = sqlstm.sqhstl;
+  sqlstm.sqphss = sqlstm.sqhsts;
+  sqlstm.sqpind = sqlstm.sqindv;
+  sqlstm.sqpins = sqlstm.sqinds;
+  sqlstm.sqparm = sqlstm.sqharm;
+  sqlstm.sqparc = sqlstm.sqharc;
+  sqlstm.sqpadto = sqlstm.sqadto;
+  sqlstm.sqptdso = sqlstm.sqtdso;
+  sqlcxt(&ctxMain, &sqlctx, &sqlstm, &sqlfpn);
+  if (sqlca.sqlcode < 0) sql_error("ym_info_batch pb update ",1,((sqlca.sqlerrm).sqlerrmc),((sqlca.sqlerrm).sqlerrml));
+}
+
+
+  /* EXEC SQL COMMIT; */ 
+
+{
+  struct sqlexd sqlstm;
+  sqlstm.sqlvsn = 12;
+  sqlstm.arrsiz = 2;
+  sqlstm.sqladtp = &sqladt;
+  sqlstm.sqltdsp = &sqltds;
+  sqlstm.iters = (unsigned int  )1;
+  sqlstm.offset = (unsigned int  )173;
+  sqlstm.cud = sqlcud0;
+  sqlstm.sqlest = (unsigned char  *)&sqlca;
+  sqlstm.sqlety = (unsigned short)4352;
+  sqlstm.occurs = (unsigned int  )0;
+  sqlcxt(&ctxMain, &sqlctx, &sqlstm, &sqlfpn);
+  if (sqlca.sqlcode < 0) sql_error("ym_info_batch pb update ",1,((sqlca.sqlerrm).sqlerrmc),((sqlca.sqlerrm).sqlerrml));
+}
+
+
+
+  if (sqlca.sqlcode < 0)
+    {
+      char szMess[180];
+
+      strncpy(szMess, sqlca.sqlerrm.sqlerrmc, sqlca.sqlerrm.sqlerrml);
+      szMess[sqlca.sqlerrm.sqlerrml]='\0';
+      YmMessLog lmess1( __FILE__, "majAssocStatusBatch", PROCESS_NAME);
+      string ltext = "impossible de mettre a jour Assoc Status Batch ";
+      ltext += "Key Info: ";
+      ltext += key_info;
+      ltext += " ";
+      ltext += szMess;
+      lmess1.envoiMess(__LINE__, ltext, YmMessLog::ERROR);
+
+      return false;
+   }
+
+  return true;
+}
+
+

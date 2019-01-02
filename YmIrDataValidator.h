@@ -1,0 +1,64 @@
+//## Module : YmIrDataValidator
+//SFD
+//  Name    : YmIrDataValidator.h
+//  Author  : Anuj Jain / Jacques FUTERAL
+//  Desc    : Contains class declarartion for YmIrDataValidator class. 
+//	      This class is used to validate IND data.
+//	      It keeps a count of invalid records and the reasons
+//	      for their being invalid. 
+//EFD
+
+#ifndef YMIRDATA_VALIDATOR_H
+#define YMIRDATA_VALIDATOR_H
+
+//## Includes
+#include <list>
+#include <map>
+#include <string>
+#include "YmIrIndOutputRec.h"
+
+//## Defines
+#define	MAX_BUCKETS  	 15
+#define	MAX_NB_LEGS  	280
+#define	MAX_CMPTS 	 13
+#define	MAX_DISTANCE_LEG 2000
+/* max length of the text message (sc_message_log) */
+#define	MAX_TEXT_MESSAGE 180
+
+
+class YmIrDataValidator 
+{
+ public:
+  //## Constructeurs
+  YmIrDataValidator() { ; }
+
+  //## Destructeur
+  ~YmIrDataValidator() { ; }
+
+  //## Autres
+  static YmIrDataValidator *Instance();
+  bool   Validate(YmIrIndOutputRec &) const ;
+  bool   ValidateCmpt( char cmptV ) const ;
+
+ private:
+  //## Autres
+  /* Ind validation methods */
+  bool ValidateIndStnOrig(YmIrIndOutputRec & ) const ;
+  bool ValidateIndStnDest(YmIrIndOutputRec & ) const ;
+  bool ValidateLdtime(YmIrIndOutputRec & ) const ;
+  bool ValidateLatime(YmIrIndOutputRec & ) const ;
+  bool ValidateTnnum(YmIrIndOutputRec & ) const ;
+  bool ValidatePcap( YmIrIndOutputRec & ) const ;
+  bool ValidateBcap( YmIrIndOutputRec & ) const ;
+  bool ValidateAcap( YmIrIndOutputRec & ) const ;
+  bool ValidateNlevel(YmIrIndOutputRec & ) const ;
+  bool ValidateCreshold( YmIrIndOutputRec & ) const ;
+
+  //## Donnees
+  /* instance of the validator class */
+  static YmIrDataValidator *_instance;
+};
+
+typedef class YmIrDataValidator *YmIrDataValidatorP;
+
+#endif

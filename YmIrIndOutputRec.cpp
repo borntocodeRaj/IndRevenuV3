@@ -1,0 +1,633 @@
+//## Module : YmIrIndOutputRec
+//SFD
+//  Name    : YmIrIndOutputRec.cpp
+//  Author  : M. Hue
+//  Desc    : Contains YmIrIndOutputRec Class Methods
+//EFD
+
+using namespace std;
+
+//## Includes
+#include <string>
+#include "YmIrInputIndRec.h"
+#include "YmIrIndOutputRec.h"
+#include "YmTools.h"
+#include "YmDate.h"
+
+//## Defines
+#define DEFAULT_SUP '\x7F'
+#define TGV	    '\xF0'
+#define TGV_SUP     '\x80'
+#define SUP_0       '\x80'
+#define SUP_1       '\x90'
+#define SUP_2       '\xA0'
+#define SUP_3       '\xB0'
+#define SUP_4       '\xC0'
+#define SUP_VERT    '\x20'
+#define OSHIBORI    '\x10'
+#define DISNEY      '\x20'
+#define FAMILLES    '\x08'
+#define SCGPOS	    10
+#define SCGLEN	    7
+
+
+//SMD
+// Name : YmIrIndOutputRec - Constructor
+// Desc : Creates Ind Output Record
+//EMD
+YmIrIndOutputRec::YmIrIndOutputRec() :
+  _trancheNo(0),
+  _dptDate(),
+  _natureTranche(0),
+  _crossesMidnight(0),
+  _supplementLevel(0),
+  _top(0),
+  _oshibori(0),
+  _disney(0),
+  _familles(0),
+  _trainNo(0),
+  _legNo(0),
+  _legOrig(),
+  _legDest(),
+  _legDptTime(1),
+  _legArvTime(),
+  _legDistanceKm(0),
+  _cmptNo(0),
+  _cmpt(),
+  _physicalCapacity(0),
+  _cmptResHold(0),
+  _blockedCapacity(0),
+  _tgvJumeauxPct(0),
+  _bucketNo(0),
+  _nestLevel(0),
+  _authorizedCapacity(0),
+  _bktResHoldInd(0),
+  _dptDateTr(),
+  _rrdDate(),
+  _isYieldManaged(0),
+  _codeEquip(),
+  _typeAlgo(),
+  _authScg(0),
+  _resHoldScg(0)
+{
+  int i;
+  for (i = 0; i < SCX_MAX; i++)
+    {
+      _authScx[i] = 0;
+      _resHoldScx[i] = 0;
+      _etancheiteScx[i] = 0;
+    }
+
+  _nbScx=0;
+}
+
+//SMD
+// Name : YmIrIndOutputRec - Constructor
+// Desc : Creates Ind Output Record
+//EMD
+YmIrIndOutputRec::YmIrIndOutputRec(int trancheNo, YmDate dptDate) :
+  _trancheNo(trancheNo),
+  _dptDate(dptDate),
+  _natureTranche(0),
+  _crossesMidnight(0),
+  _supplementLevel(0),
+  _top(0),
+  _oshibori(0),
+  _disney(0),
+  _familles(0),
+  _trainNo(0),
+  _legNo(0),
+  _legOrig(),
+  _legDest(),
+  _legDptTime(1),
+  _legArvTime(1),
+  _legDistanceKm(0),
+  _cmptNo(0),
+  _cmpt(),
+  _physicalCapacity(0),
+  _cmptResHold(0),
+  _blockedCapacity(0),
+  _tgvJumeauxPct(0),
+  _bucketNo(0),
+  _nestLevel(0),
+  _authorizedCapacity(0),
+  _bktResHoldInd(0),
+  _dptDateTr(),
+  _rrdDate(),
+  _isYieldManaged(0),
+  _codeEquip(),
+  _typeAlgo(),
+  _authScg(0),
+  _resHoldScg(0)
+{
+  int i;
+  _nbScx = 0;
+  for (i = 0; i < SCX_MAX; i++)
+    {
+      _authScx[i] = 0;
+      _resHoldScx[i] = 0;
+      _etancheiteScx[i] = 0;
+    }
+}
+
+//SMD
+// Name : YmIrIndOutputRec - Constructor
+// Desc : Creates Ind Output Record
+//EMD
+YmIrIndOutputRec::YmIrIndOutputRec(int trancheNo, YmDate dptDate, int natureTranche, int crossesMidnight,
+				   int supplementLevel, int trainNo, int legNo, string legOrig, string legDest,
+				   int legDptTime, int legArvTime, int legDistanceKm, int cmptNo, string cmpt,
+				   int physicalCapacity, int cmptResHold, int blockedCapacity, int tgvJumeauxPct,
+				   int bucketNo, int nestLevel, int authorizedCapacity, int bktResHoldInd,
+				   YmDate dptDateTr, YmDate rrdDate, int isYieldManaged, string codeEquip,
+				   string typeAlgo, int top, int oshibori, int disney, int familles)
+{
+  _trancheNo = trancheNo;
+  _dptDate = dptDate;
+  _natureTranche = natureTranche;
+  _crossesMidnight = crossesMidnight;
+  _supplementLevel = supplementLevel;
+  _top = top;
+  _oshibori = oshibori;
+  _disney = disney;
+  _familles = familles;
+  _trainNo = trainNo;
+  _legNo = legNo;
+  _legOrig = legOrig;
+  _legDest = legDest;
+  _legDptTime = legDptTime;
+  _legArvTime = legArvTime;
+  _legDistanceKm = legDistanceKm;
+  _cmptNo = cmptNo;
+  _cmpt = cmpt;
+  _physicalCapacity = physicalCapacity;
+  _cmptResHold = cmptResHold;
+  _blockedCapacity = blockedCapacity;
+  _tgvJumeauxPct = tgvJumeauxPct;
+  _bucketNo = bucketNo;
+  _nestLevel = nestLevel;
+  _authorizedCapacity = authorizedCapacity;
+  _bktResHoldInd = bktResHoldInd;
+  _dptDateTr = dptDateTr;
+  _rrdDate = rrdDate;
+  _isYieldManaged = isYieldManaged;
+  _codeEquip = codeEquip; 
+  _typeAlgo = typeAlgo;
+}
+
+//SMD
+// Name : YmIrIndOutputRec - Constructor
+// Desc : Creates Ind Output Record
+//EMD
+YmIrIndOutputRec::YmIrIndOutputRec(int trancheNo, YmDate dptDate, int natureTranche, int crossesMidnight,
+				   int supplementLevel, int trainNo, int legNo, string legOrig, string legDest,
+				   YmDate dptLegDate, int legDptTime, YmDate arvLegDate, int legArvTime,
+				   int legDistanceKm, int cmptNo, string cmpt, int physicalCapacity, int cmptResHold,
+				   int blockedCapacity, int tgvJumeauxPct, int bucketNo, int nestLevel,
+				   int authorizedCapacity, int bktResHoldInd, YmDate dptDateTr, YmDate rrdDate,
+				   int isYieldManaged, string codeEquip, string typeAlgo, short authScg,
+				   short resHoldScg, short *authScx, short *resHoldScx, char *etancheiteScx,
+				   short nbScx, int top, int oshibori, int disney, int familles)  
+{
+  _trancheNo = trancheNo;
+  _dptDate = dptDate;
+  _natureTranche = natureTranche;
+  _crossesMidnight = crossesMidnight;
+  _supplementLevel = supplementLevel;
+  _top = top;
+  _oshibori = oshibori;
+  _disney = disney;
+  _familles = familles;
+  _trainNo = trainNo;
+  _legNo = legNo;
+  _legOrig = legOrig;
+  _legDest = legDest;
+  _dptLegDate = dptLegDate;
+  _legDptTime = legDptTime;
+  _arvLegDate = arvLegDate;
+  _legArvTime = legArvTime;
+  _legDistanceKm = legDistanceKm;
+  _cmptNo = cmptNo;
+  _cmpt = cmpt;
+  _physicalCapacity = physicalCapacity;
+  _cmptResHold = cmptResHold;
+  _blockedCapacity = blockedCapacity;
+  _tgvJumeauxPct = tgvJumeauxPct;
+  _bucketNo = bucketNo;
+  _nestLevel = nestLevel;
+  _authorizedCapacity = authorizedCapacity;
+  _bktResHoldInd = bktResHoldInd;
+  _dptDateTr = dptDateTr;
+  _rrdDate = rrdDate;
+  _isYieldManaged = isYieldManaged ;
+  _codeEquip = codeEquip; 
+  _typeAlgo = typeAlgo;
+
+#ifdef TEST
+  if (DEBUG)
+    {
+      char cDate[9];
+      dptDate.PrintResaven(cDate, true);
+
+      cout << "Creation Tranche dptDate : " << cDate << " TrancheNo: " << trancheNo <<  " legOrig: " << legOrig << " legDest: " << legDest << endl;
+    }
+#endif
+
+  if (!_nestLevel)
+    {
+      _authScg = authScg;
+      _resHoldScg = resHoldScg;
+      for (int i = 0; i < SCX_MAX; i++)
+	{
+	  _authScx[i] = authScx[i];
+	  _resHoldScx[i] = resHoldScx[i];
+	  _etancheiteScx[i] = etancheiteScx[i];
+	}
+      _nbScx = nbScx;
+    }
+}
+
+
+//SMD
+// Name : YmIrIndOutputRec - Copy Constructor
+// Desc : Creates Ind Output Record using another Ind Output Record
+//EMD
+YmIrIndOutputRec::YmIrIndOutputRec(const YmIrIndOutputRec &right) :
+  _trancheNo(right._trancheNo),
+  _dptDate(right._dptDate),
+  _natureTranche(right._natureTranche),
+  _crossesMidnight(right._crossesMidnight),
+  _supplementLevel(right._supplementLevel),
+  _top(right._top),
+  _oshibori(right._oshibori), 
+  _disney(right._disney), 
+  _familles(right._familles),
+  _trainNo(right._trainNo),
+  _legNo(right._legNo),
+  _legOrig(right._legOrig), _legDest(right._legDest),
+  _legDptTime(right._legDptTime),
+  _legArvTime(right._legArvTime),
+  _legDistanceKm(right._legDistanceKm),
+  _cmptNo(right._cmptNo),
+  _cmpt(right._cmpt),
+  _physicalCapacity(right._physicalCapacity),
+  _cmptResHold(right._cmptResHold),
+  _blockedCapacity(right._blockedCapacity),
+  _tgvJumeauxPct(right._tgvJumeauxPct),
+  _bucketNo(right._bucketNo),
+  _nestLevel(right._nestLevel),
+  _authorizedCapacity(right._authorizedCapacity),
+  _bktResHoldInd(right._bktResHoldInd),
+  _rrdDate(right._rrdDate),
+  _isYieldManaged(right._isYieldManaged),
+  _codeEquip(right._codeEquip) ,
+  _typeAlgo(right._typeAlgo)
+{ 
+  if (!_nestLevel)
+    {
+      _authScg = right._authScg;
+      _resHoldScg = right._resHoldScg;
+
+      for (int i = 0; i < SCX_MAX; i++)
+	{
+	  _authScx[i] = right._authScx[i];
+	  _resHoldScx[i] = right._resHoldScx[i];
+	  _etancheiteScx[i] = right._etancheiteScx[i];
+	}
+      _nbScx = right._nbScx;
+    }
+} 
+
+//SMD
+// Name : YmIrIndOutputRec - operator=
+// Desc : Assigns values to a Ind Output Rec from another Ind Output Rec
+//EMD
+const YmIrIndOutputRec &YmIrIndOutputRec::operator=(const YmIrIndOutputRec &right)
+{
+  _trancheNo = right._trancheNo;
+  _dptDate = right._dptDate;
+  _natureTranche = right._natureTranche;
+  _crossesMidnight = right._crossesMidnight;
+  _supplementLevel = right._supplementLevel;
+  _top = right._top;
+  _oshibori = right._oshibori; 
+  _disney = right._disney;
+  _familles = right._familles;
+  _trainNo = right._trainNo;
+  _legNo = right._legNo;
+  _bucketNo = right._bucketNo;
+  _legOrig = right._legOrig;
+  _legDest = right._legDest;
+  _legDptTime = right._legDptTime;
+  _legArvTime = right._legArvTime;
+  _legDistanceKm = right._legDistanceKm;
+  _cmptNo = right._cmptNo;
+  _cmpt = right._cmpt;
+  _physicalCapacity = right._physicalCapacity;
+  _cmptResHold = right._cmptResHold;
+  _blockedCapacity = right._blockedCapacity;
+  _tgvJumeauxPct = right._tgvJumeauxPct;
+  _bucketNo = right._bucketNo;
+  _nestLevel = right._nestLevel;
+  _authorizedCapacity = right._authorizedCapacity;
+  _bktResHoldInd = right._bktResHoldInd ;
+  _dptDateTr = right._dptDateTr;
+  _rrdDate = right._rrdDate;
+  _isYieldManaged = right._isYieldManaged ;
+  _codeEquip = right._codeEquip; 
+  _typeAlgo = right._typeAlgo;
+
+  if (!_nestLevel)
+    {
+      _authScg = right._authScg;
+      _resHoldScg = right._resHoldScg;
+
+      for (int i = 0; i < SCX_MAX; i++)
+	{
+	  _authScx[i] = right._authScx[i];
+	  _resHoldScx[i] = right._resHoldScx[i];
+	  _etancheiteScx[i] = right._etancheiteScx[i];
+	}
+      _nbScx = right._nbScx;
+    }
+//FBO DM 5882.1
+
+	return *this;
+}
+
+//SMD
+// Name : YmIrIndOutputRec - Destructor
+// Desc : Destroys Ind Output Record
+//EMD
+YmIrIndOutputRec::~YmIrIndOutputRec()
+{
+}
+
+//SMD
+// Name : YmIrIndOutputRec - operator==
+// Desc : Comparison operator.  Returns True if the IND record on the right
+//        hand side of the operator is equal to the IND record on the left.
+//EMD
+bool YmIrIndOutputRec::operator==(const YmIrIndOutputRec &right) const
+{
+  if (this->_trancheNo != right._trancheNo)
+    return false;
+
+  if ((YmDate)(this->_dptDate) != (YmDate)(right._dptDate))
+    return false;
+
+  return true;
+}
+
+//SMD
+// Name : YmIrIndOutputRec - operator!=
+// Desc : Comparison operator.  Returns True if the IND record on the right
+//        hand side of the operator is not equal to the IND record on the left.
+//EMD
+bool YmIrIndOutputRec::operator!=(const YmIrIndOutputRec &right) const
+{
+  if (this->_trancheNo != right._trancheNo)
+    return true;
+
+  if ((YmDate)(this->_dptDate) != (YmDate)(right._dptDate))
+    return true;
+
+  return false;
+}
+
+//SMD
+// Name : YmIrIndOutputRec - EqualLeg
+// Desc : Comparison operator.  Returns True if the IND record on the left is
+//        the same Tranche Leg as the IND record on the right.
+//EMD
+bool YmIrIndOutputRec::EqualLeg(const YmIrIndOutputRec &right) const
+{
+  if (this->_trancheNo != right._trancheNo)
+    return false;
+
+  if ((YmDate)(this->_dptDate) != (YmDate)(right._dptDate))
+    return false;
+
+  if (this->_legOrig != right._legOrig)
+    return false;
+
+  if (this->_legDest != right._legDest)
+    return false;
+
+  return true;
+}
+
+//SMD
+// Name : YmIrIndOutputRec - EqualCmpt
+// Desc : Comparison operator.  Returns True if the IND record on the left is
+//        the same Tranche Leg Compartment as the IND record on the right.
+//EMD
+bool YmIrIndOutputRec::EqualCmpt(const YmIrIndOutputRec &right) const
+{
+  if (this->EqualLeg(right) && (this->_cmpt == right._cmpt))
+    return true;
+
+  return false;
+}
+
+//SMD
+// Name : YmIrIndOutputRec
+// Desc : creation of an output IND record using the input record inputrec_
+//        and the numbers of legs, bcs and buckets
+//EMD
+YmIrIndOutputRec::YmIrIndOutputRec(YmIrInputIndRec inputrec_, int no_leg_, int no_bcs_,
+				   int no_buc_, YmMapStations *mapStations)
+{
+  unsigned char  lbyte;
+  signed   char	 ldate_disc;
+  signed   char	 ldate_adj;
+  int		 ldate_adj2;
+  unsigned short lshort;
+  short		 lsigshort;
+  unsigned short lnumber_days;
+  char 		 lresarail_code[6];
+  char 		 lugb3_code[4];
+  char		 lresaordinal[10];
+  unsigned char	 lsupplementLevel;
+  char		 lstr[10];
+  int		 lloresarail;
+  int		 lint;
+
+  /* Copy the Tranche Number and dptDate from the pni Header */
+  _trancheNo = inputrec_.get_trancheNo();
+
+  /* Departure Date +1 */
+  g_tools.transdate(_dptDate, inputrec_.get_nb_days());
+
+  /* Copy the natureTranche from the pni Header */
+  _natureTranche = inputrec_.get_natureTranche();
+
+  /* Crosses Midnight */
+  _crossesMidnight = inputrec_.get_crossesMidnight();
+
+  /* Leg No */
+  _legNo = inputrec_.get_nb_legs();
+
+  /* Compartement */
+  _cmptNo = inputrec_.get_nb_bcs();
+
+  /* Bucket Number */
+  _bucketNo = inputrec_.get_nb_bucs(no_leg_, no_bcs_);
+
+  /* leg Origin */
+  lugb3_code[0] = inputrec_._legHeader[no_leg_][0];
+  lugb3_code[1] = inputrec_._legHeader[no_leg_][1];
+  lugb3_code[2] = inputrec_._legHeader[no_leg_][2];
+
+  g_tools.convugb3(lresarail_code,lugb3_code);
+
+  _legOrig = lresarail_code;
+
+  /* Leg Dest */
+  if (no_leg_ < inputrec_.get_nb_legs() - 1)
+    {
+      lugb3_code[0] = inputrec_._legHeader[no_leg_ + 1][0] ;
+      lugb3_code[1] = inputrec_._legHeader[no_leg_ + 1][1] ;
+      lugb3_code[2] = inputrec_._legHeader[no_leg_ + 1][2] ;
+      g_tools.convugb3(lresarail_code, lugb3_code) ;
+      _legDest = lresarail_code ;
+    }
+  else /* It's the Tranche Dest */
+    {
+      lugb3_code[0] = inputrec_._terminate[0];
+      lugb3_code[1] = inputrec_._terminate[1];
+      lugb3_code[2] = inputrec_._terminate[2];
+      g_tools.convugb3(lresarail_code, lugb3_code);
+      _legDest = lresarail_code;
+    }
+
+  /* Leg Departure Time */
+  memcpy(&lshort, &inputrec_._legHeader[no_leg_][20], 2);
+  memcpy(&ldate_disc, &inputrec_._legHeader[no_leg_][18], 1);
+  memcpy(&ldate_adj, &inputrec_._legHeader[no_leg_][19], 1);
+
+  _dptLegDate = _dptDate;
+  _dptLegDate += (int)g_tools.convsign2int(ldate_disc);
+
+  _legDptTime = ((int)(lshort / 60) * 100) + (lshort % 60);
+
+  /* Leg Arrival Time */
+  memcpy(&lshort, &inputrec_._legHeader[no_leg_][22], 2);
+
+  _arvLegDate = _dptDate;
+  _arvLegDate += (int)(g_tools.convsign2int(ldate_disc) + g_tools.convsign2int(ldate_adj));
+
+  _legArvTime=((int)(lshort / 60) * 100) + (lshort % 60);
+
+  /* Departure date . WARNING: this must be done after leg departure and arrival
+   * time  calculation because leg date calculations are based on the date of
+   * the last segment */
+
+  _dptDate -= inputrec_.get_crossesMidnight();
+  _dptDateTr = _dptDate;
+
+  /* Distance in km */
+  memcpy(&lshort, &inputrec_._legHeader[no_leg_][24], 2);
+  _legDistanceKm = (int)lshort;
+
+  /* Train Number */
+  memcpy(&lint, &inputrec_._legHeader[0][28], 4);
+  _trainNo = lint;
+
+  /* Leg Compartment Section */
+  lstr[0] = inputrec_._legBCS[no_leg_][no_bcs_][0];
+  lstr[1] = 0;
+  g_tools.convertEBC2ASC(lstr, 1);
+  _cmpt = lstr;
+
+  /* Physical Capacity */
+  memcpy(&lshort, &inputrec_._legBCS[no_leg_][no_bcs_][4], 2);
+  _physicalCapacity = lshort;
+
+  /* Cmpt Res Hold */
+  memcpy(&lshort, &inputrec_._legBCS[no_leg_][no_bcs_][6], 2);
+  _cmptResHold = lshort;
+
+  /* Cmpt Blocked Capacity */
+  memcpy(&lshort, &inputrec_._legBCS[no_leg_][no_bcs_][8], 2);
+  _blockedCapacity = lshort;
+
+  /* Nest Level */
+  _nestLevel = no_buc_;
+
+  /* Pour pallier le BUG de perte de bucket BSA_MHE ... WARNING!!! */
+  char cDptDate[20];
+  if (_dptDate.year() < 2005)
+    {
+      _dptDate.PrintResaven(cDptDate, true);
+      cerr << " > output " << _trancheNo
+	   << "-" << cDptDate << "-" << inputrec_.get_nb_days()
+	   << "-" << _legOrig
+	   << "-" << _cmpt
+	   << endl;
+
+      g_tools.transdate(_dptDate, inputrec_.get_nb_days());
+      _dptDate.PrintResaven(cDptDate, true);
+
+      cerr << " > output apres " << _trancheNo
+	   << "-" << cDptDate << "-" << inputrec_.get_nb_days()
+	   << "-" << _legOrig
+	   << "-" << _cmpt
+	   << endl;
+    }
+
+  _top = (char)inputrec_.get_top();
+
+  /* Supplement Level */
+  lsupplementLevel = (char)inputrec_.get_supplementLevel();
+
+  if ((char)(lsupplementLevel & DEFAULT_SUP) == (char)DEFAULT_SUP)
+    _supplementLevel = -1;
+  else if ((char)(lsupplementLevel & TGV) ==(char)SUP_1)
+    _supplementLevel = 1;
+  else if ((char)(lsupplementLevel & TGV) == (char)SUP_2)
+    _supplementLevel = 2;
+  else if ((char)(lsupplementLevel & TGV) == (char)SUP_3)
+    _supplementLevel = 3;
+ else if ((char)(lsupplementLevel & TGV) == (char)SUP_4)
+   _supplementLevel = 4;
+  else if  ((char)(lsupplementLevel & TGV) == (char)SUP_0)
+    _supplementLevel = 0;
+  else if ((char)(lsupplementLevel & TGV) == (char)SUP_VERT)
+    _supplementLevel = 0;
+  else _supplementLevel = -1;
+
+  /* BktResHoldInd */
+  memcpy(&lsigshort, &inputrec_._legBucket[no_leg_][no_bcs_][no_buc_][6], 2);
+  _bktResHoldInd = (int)lsigshort;
+
+  /* Authorized Capacity */
+  memcpy(&lsigshort, &inputrec_._legBucket[no_leg_][no_bcs_][no_buc_][8], 2);
+  _authorizedCapacity = (int)lsigshort;
+
+  /* TGV Jumeaux Pict */
+  lbyte = inputrec_._legBucket[no_leg_][no_bcs_][no_buc_][12];
+  _tgvJumeauxPct = (int)lbyte;
+
+  /* Copy the CodeEquip  from the Ind Header */
+  _isYieldManaged = inputrec_.get_isYieldManaged();
+  _codeEquip = inputrec_.get_codeEquip() ; 
+  _typeAlgo = inputrec_.get_typeAlgo() ;
+
+  if (!_nestLevel)
+    {
+      memcpy(&lsigshort, &inputrec_._legBCS[no_leg_][no_bcs_][SCGPOS], 2);
+      _resHoldScg = lsigshort;
+      memcpy(&lsigshort, &inputrec_._legBCS[no_leg_][no_bcs_][SCGPOS+2], 2);
+      _authScg = lsigshort;
+      for ( int i = 0; i < SCX_MAX; i++)
+	{
+	  memcpy(&lsigshort, &inputrec_._legBCS[no_leg_][no_bcs_][SCGPOS + SCGLEN + (i * SCGLEN)], 2);
+	  _resHoldScx[i] = lsigshort;
+	  memcpy(&lsigshort, &inputrec_._legBCS[no_leg_][no_bcs_][SCGPOS + SCGLEN + (i * SCGLEN) + 2], 2);
+	  _authScx[i] = lsigshort;
+	  _etancheiteScx[i] = (inputrec_._legBCS[no_leg_][no_bcs_][SCGPOS + SCGLEN + (i * SCGLEN) + 6] & 0x80? 1 : 0);
+	}
+      _nbScx = (short)inputrec_._legBCS[no_leg_][no_bcs_][SCGPOS + SCGLEN + (SCX_MAX * SCGLEN)];
+    }
+}

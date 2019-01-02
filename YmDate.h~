@@ -1,0 +1,96 @@
+//## Module : YmDate
+//SFD
+// Name	    : YmDate.h
+// Author   : JM. Grugeaux
+// Desc     : Realisation d'une classe CDate adapte a nos besoins
+//EDF
+
+#ifndef YmDate_h
+#define YmDate_h 1
+
+//## Includes
+#include <ctime>
+#include <string>
+#include <iostream>
+#include <cstring>
+#include <stdio.h>
+#include <stdlib.h>
+
+//## Global
+/* Renvoi l'heure sous forme HH:MI:SS */
+extern char* DonneHeure();
+/* Renvoi l'hure sous forme hh*100 + mi */
+extern int  DonneIntHeure();
+/* Converti AAAAMMJJ en JJ/MM/AAAA */
+extern char *ConvertAAAAMMJJ(string& szAAAAMMJJ);
+
+class YmDate
+{
+ public:
+  //## Constructeurs
+  /* Default constructor, initialise avec la date du jour */
+  YmDate();
+  /* Copie constructor */
+  YmDate(const YmDate& aYmDate);
+  /* Construit et initialise une date a partir d'une string au format AAAAMMJJ
+   * ou au format JJ/MM/AAAA. la diferentition se fait sur la intueur de la string */
+  YmDate(string& szAAAAMMJJ);
+  /* Construit et initialise une date a partir anne mois jour */
+  YmDate(int annee, int mois, int jour);
+
+  //## Destructeur
+  ~YmDate() {;}
+
+  //# Autres
+  /* Renvoi scible, format JJ/MM/AAAA si fullyear = true, au format JJ/MM/AA sinon */
+  string& PrintFrench(string& scible, bool fullyear = true);
+  /* Renvoi scible, format MM/DD/YYYY si fullyear = true, au format MM/DD/YY sinon */
+  string& PrintUS(string& scible, bool fullyear = true);
+  /* Renvoi scible, format YYYY/MM/DD si fullyear = true, au format YY/MM/DD sinon */
+  string& PrintOracle(string& scible, bool fullyear = true);
+  /* Renvoi scible, format YYYYMMDD si fullyear = true, au format YYMMDD sinon */
+  string& PrintResaven (string& cible, bool fullyear = true);
+  /* Idem mais avec un char* */
+  char *PrintFrench(char* sbuf, bool fullyear = true);
+  /* Idem mais avec un char* */
+  char *PrintUS(char* sbuf, bool fullyear = true);
+  /* Idem mais avec un char* */
+  char *PrintOracle(char* sbuf, bool fullyear = true);
+  /* Idem mais avec un char* */
+  char *PrintResaven(char* sbuf, bool fullyear = true);
+  /* Renvoi le jour de semaine entre 1 et 7, Lundi = 1 si bMondayFirst vrai, Dimanche = 1 sinon */
+  int WeekDay(bool bMondayFirst = true);
+  /* Renvoi le nombre de jour depuis le debut de l'annee */
+  int YearDay();
+  /* Renvoi le nombre de jour depuis le 01/01/1970 */
+  int DaysFrom70();
+  /* Renvoi l'annee */
+  int year();
+  /* Renvoi le mois */
+  int month();
+  /* Renvoi le jour du mois */
+  int day();
+
+  //## Operateur
+  YmDate  &operator=(const YmDate& aYmDate);
+  bool	  operator==(const YmDate& aYmDate) const;
+  bool    operator!=(const YmDate& aYmDate);
+  bool    operator>=(const YmDate& aYmDate);
+  bool    operator<=(const YmDate& aYmDate);
+  bool    operator>(const YmDate& aYmDate);
+  bool    operator<(const YmDate& aYmDate);
+  YmDate& operator+=(int nbjour);
+  YmDate& operator-=(int nbjour);
+  YmDate& operator++();
+  YmDate& operator--();
+
+ private:
+  //## Autres
+  char *AllPrint (char *sbuf, int typrint, bool fullyear);
+
+  //## Donnees
+  time_t    _nbseconds;
+  struct tm _datetime;
+};
+
+#endif

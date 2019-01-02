@@ -1,0 +1,124 @@
+//## Module : YmMapCompartments
+//SFD
+//  Name    : YmMapCompartments.pc
+//  Author  : flabyt
+//  Desc    : Traitement de la liste des Compartments
+//EFD
+
+using namespace std;
+
+//## Includes
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
+#include <thread.h>
+#include <iterator>
+#include <sqlca.h>
+#include <YmIrGlobal.h>
+#include <YmMapCompartments.h>
+
+//## Global
+extern sql_context ctxMain;
+
+//SMD
+// Name : Constructeur
+// Desc : Constructeur par defaut
+//EMD
+YmMapCompartments::YmMapCompartments()
+{
+  nbFindMapCompartments = 0;
+}
+
+//SMD
+// Name : Destructeur
+// Desc : Destructeur
+//EMD
+YmMapCompartments::~YmMapCompartments()
+{
+  MapCompartmentsType::iterator iPos = _MapCompartments.begin();
+  MapCompartmentsType::iterator iFin = _MapCompartments.end();
+
+  YmCompartments *pCompartments;
+  while (iPos != iFin)
+    {
+      pCompartments = iPos->second;
+      delete pCompartments;
+      iPos++;
+    }
+
+  _MapCompartments.clear();
+}
+
+//SMD
+// Name : Init
+// Desc : initialisation de la map a partir de la base, 0 = OK, -1 = pas trouve
+//EMD
+int YmMapCompartments::init()
+{
+  int iRet = 0;
+  int iNb = 0;
+
+  EXEC SQL BEGIN DECLARE SECTION;
+  varchar cmpt[2];
+  EXEC SQL END DECLARE SECTION;
+    
+  EXEC SQL WHENEVER SQLERROR DO sql_error((char *)"liste des compartments illisible", 1, sqlca.sqlerrm.sqlerrmc,
+					  sqlca.sqlerrm.sqlerrml);
+  EXEC SQL CONTEXT USE :ctxMain;
+  EXEC SQL DECLARE cMapCompartments CURSOR FOR
+    SELECT cmpt
+    FROM ym_compartments
+    ORDER BY cmpt;
+  EXEC SQL OPEN cMapCompartments ;
+
+  EXEC SQL WHENEVER NOT FOUND DO break;
+  string skey1;
+  string scmpt;
+  string seditDt;
+
+  while(1)
+    {
+      EXEC SQL FETCH cMapCompartments INTO :cmpt;
+      iNb++;
+
+      cmpt.arr[cmpt.len] = '\0';
+      scmpt = (char *)cmpt.arr;
+      skey1 = scmpt;
+      
+      YmCompartments *pCompartments = new YmCompartments(scmpt);
+
+      _MapCompartments[skey1] = pCompartments;
+    }
+  EXEC SQL CLOSE cMapCompartments ;
+
+  if (iNb == 0) 
+    iRet = -1;
+  else
+    iRet = 0;
+
+  return iRet;
+}
+
+//SMD
+// Name : IsInMap
+// Desc : Retourne pointeur si OK, NULL sinon
+//EMD
+YmCompartments *YmMapCompartments::isInMap(string cmpt)
+{
+  MapCompartmentsType::iterator iPos;
+  YmCompartments *pYmCompartments;
+
+  iPos = _MapCompartments.find(cmpt);
+  if (iPos == _MapCompartments.end()) 
+    return NULL;
+  else
+    {
+      pYmCompartments = iPos->second;
+      nbFindMapCompartments++;
+      return pYmCompartments;
+    }
+}
+
+
+

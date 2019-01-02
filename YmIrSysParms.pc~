@@ -1,0 +1,143 @@
+//## Module : YmIrSysParms
+//SFD
+//  Name    : YmIrSysParms.pc
+//  Author  : Bernard Sabattié
+//  Desc    : Traitement de la lecture des paramètres système.
+//EFD
+
+using namespace std;
+
+//## Includes
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
+#include <thread.h>
+#include <iterator>
+#include <sqlca.h>
+#include "YmIrGlobal.h"
+#include "YmIrSysParms.h"
+
+//## Global
+extern sql_context ctxMain;
+
+//SMD
+// Name : Constructeur
+// Desc : Constructeur par defaut
+//EMD
+YmIrSysParms::YmIrSysParms()
+{
+}
+
+//SMD
+// Name : Destructeur
+// Desc : Destructeur
+//EMD
+YmIrSysParms::~YmIrSysParms()
+{
+}
+
+//SMD
+// Name : getChar
+// Desc :
+//EMD
+string  YmIrSysParms::getChar(char *c_sysParmName,char *c_sysParmPlus) 
+{
+  string scharValue; 
+
+  EXEC SQL BEGIN DECLARE SECTION;
+  varchar charValue[81];
+  varchar sysParmName[31];
+  varchar sysParmPlus[31];
+  EXEC SQL END DECLARE SECTION;
+  
+  strcpy((char *)sysParmName.arr, c_sysParmName);
+  sysParmName.len = strlen((const char *)sysParmName.arr);
+  strcpy((char *)sysParmPlus.arr, c_sysParmPlus);
+  sysParmPlus.len = strlen((const char *)sysParmPlus.arr);
+
+  EXEC SQL WHENEVER SQLERROR GOTO sql_error;
+  EXEC SQL CONTEXT USE :ctxMain;
+  EXEC SQL SELECT char_value
+    INTO :charValue
+    FROM ym_sys_parms
+    WHERE sys_parm_name = :sysParmName
+    AND sys_parm_plus = nvl(:sysParmPlus, ' ');
+   
+  charValue.arr[charValue.len] = '\0';
+  scharValue = (char *)charValue.arr;
+  return (scharValue);
+
+ sql_error:
+  cerr << "INFO - Le parametre " << c_sysParmName << " n est pas renseigne \n";
+  charValue.arr[0] = '\0';
+  scharValue = (char *)charValue.arr;
+  return (scharValue);
+}
+
+//SMD
+// Name : getFloat
+// Desc :
+//EMD
+bool YmIrSysParms::getFloat(char *c_sysParmName, char *c_sysParmPlus,float &floatValue)
+{
+  EXEC SQL BEGIN DECLARE SECTION;
+  float   l_floatValue;
+  varchar sysParmName[31];
+  varchar sysParmPlus[31];
+  EXEC SQL END DECLARE SECTION;
+    
+  strcpy((char *)sysParmName.arr, c_sysParmName);
+  sysParmName.len = strlen((const char *)sysParmName.arr);
+
+  strcpy((char *)sysParmPlus.arr, c_sysParmPlus);
+  sysParmPlus.len = strlen((const char *)sysParmPlus.arr);
+
+  EXEC SQL WHENEVER SQLERROR GOTO sql_error;
+  EXEC SQL CONTEXT USE :ctxMain;
+  EXEC SQL SELECT float_value
+    INTO :l_floatValue
+    FROM ym_sys_parms
+    WHERE sys_parm_name = :sysParmName
+    AND sys_parm_plus = nvl(:sysParmPlus, ' ');
+
+  floatValue = l_floatValue;
+  return (true);
+
+ sql_error:
+  cerr << "INFO - Le parametre " << c_sysParmName << " n est pas renseigne \n";
+  return (false);
+}
+
+//SMD
+// Name : getInt
+// Desc :
+//EMD
+bool YmIrSysParms::getInt(char *c_sysParmName, char *c_sysParmPlus ,int &intValue)
+{
+  EXEC SQL BEGIN DECLARE SECTION;
+  int     l_intValue;
+  varchar sysParmName[31];
+  varchar sysParmPlus[31];
+  EXEC SQL END DECLARE SECTION;
+    
+  strcpy((char *)sysParmName.arr, c_sysParmName);
+  sysParmName.len = strlen((const char *)sysParmName.arr);
+  strcpy((char *)sysParmPlus.arr, c_sysParmPlus);
+  sysParmPlus.len = strlen((const char *)sysParmPlus.arr);
+
+  EXEC SQL WHENEVER SQLERROR GOTO sql_error;
+  EXEC SQL CONTEXT USE :ctxMain;
+  EXEC SQL SELECT float_value
+    INTO :l_intValue
+    FROM ym_sys_parms
+    WHERE sys_parm_name = :sysParmName
+    AND sys_parm_plus = nvl(:sysParmPlus, ' ');
+
+  intValue = l_intValue;
+  return (true);
+
+ sql_error:
+  cerr << "INFO - Le parametre " << c_sysParmName << " n est pas renseigne \n";
+  return (false);
+}

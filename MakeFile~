@@ -1,0 +1,121 @@
+INDREVENU_HDRS =	YmDate.h \
+			CoreLimit.h \
+			YmIrGlobal.h \
+			YmDatesIrATraiter.h \
+			YmStations.h \
+			YmLeg.h \
+			YmPays.h \
+			YmTools.h \
+			YmIrIndOutputRec.h \
+			YmIrInputIndRec.h \
+                        YmIrIndLoader.h \
+			YmIrDvLoader.h \
+                        YmIrTranche.h \
+			YmIrTrain.h \
+			YmCompartments.h \
+			YmIrDataValidator.h
+
+INDREVENU_SRCS =	YmDate.cpp \
+			CoreLimit.cpp \
+			YmDatesIrATraiter.cpp \
+			YmStations.cpp \
+			YmLeg.cpp \
+			YmPays.cpp \
+			YmTools.cpp \
+			YmIrIndOutputRec.cpp \
+			YmIrInputIndRec.cpp \
+                        YmIrIndLoader.cpp \
+			YmIrDvLoader.cpp \
+			YmCompartments.cpp \
+			YmIrDataValidator.cpp
+
+INDREVENU_PHDRS =	YmMessLog.h \
+			YmIrInfoBatch.h \
+			YmTranche.h \
+			YmMapDatesIrATraiter.h \
+                        YmMapStations.h \
+                        YmMapPays.h \
+	 		YmIrSysParms.h \
+			YmMapCompartments.h
+
+INDREVENU_PROC =	YmMessLog.pc \
+			YmIrInfoBatch.pc \
+			YmTranche.pc \
+			YmMapDatesIrATraiter.pc \
+                        YmMapStations.pc \
+                        YmMapPays.pc \
+                        YmIrSysParms.pc \
+			YmIrMain.pc \
+			YmMapCompartments.pc
+
+INDREVENU_OBJS = $(INDREVENU_SRCS:.cpp=.o)
+
+INDREVENU_POBJS = $(INDREVENU_PROC:.pc=.o)
+
+indrevenuV3:$(INDREVENU_OBJS) $(INDREVENU_POBJS) 
+		$(CPLUSPLUS) $(INDREVENU_OBJS) $(INDREVENU_POBJS) $(LDFLAGS) -L/usr/lib/oracle/11.2/client64/lib  -lclntsh -o ../../bin/indrevenuV3
+		 
+.SUFFIXES: .pc .c .o .typ .h .cpp
+
+.pc.c:
+	$(INDREVENU_PROC) $(PROCFLAGS) $*.pc $*.c
+
+.pc.o:
+	proc $(PROCPPFLAGS) iname=$< DEFINE=$(PROCPLSFLAGS)
+	$(CPLUSPLUS) $(XCFLAGS) $(CFLAGS) $(CXXFLAGS) -L/usr/lib/oracle/11.2/client64/lib/ -lclntsh -c  $*.cpp -o $@
+	
+
+.cpp.o:
+	$(CPLUSPLUS) $(XCFLAGS) $(CFLAGS) $(CXXFLAGS) -L/usr/lib/oracle/11.2/client64/lib/ -lclntsh -c  $*.cpp -o $@
+
+.PHONY: all clean
+
+# description des dependances
+$(INDREVENU_OBJS):$(INDREVENU_HDRS)
+#$(RESEND_OBJS):$(RESEND_HDRS)
+
+$(INDREVENU_POBJS):$(INDREVENU_PHDRS)
+#$(RESEND_POBJS):$(RESEND_PHDRS)
+
+$(INDREVENU_IOBJS):$(INDREVENU_IHDRS)
+
+# These macro definitions fill in some details or override some defaults
+INCLUDE=-I$(ORACLE_HOME) -I/usr/include/oracle/11.2/client64/ #-I/usr/lib/oracle/11.2/client64/lib/precomp/public
+CFLAGS=$(INCLUDE)
+CPPFLAGS= -D SQLCA_STORAGE_CLASS=extern -D_REENTRANT
+CXXFLAGS=-g -D POSIX_THREAD -D_REENTRANT $(INCLUDE) -MMD -MP -D SQLCA_STORAGE_CLASS=extern -L/usr/lib/oracle/11.2/client64/lib/ -lclntsh
+CPLUSPLUS=g++ -lclntsh
+CC=gcc
+USERID=$(PROPRIO_BASE)
+OTTFLAGS=$(PCCFLAGS)
+PRODUCT_LIBHOME=
+MAKEFILE=./Makefile
+PROCPLSFLAGS=userid=$(USERID) sqlcheck=full
+#Support for all the ANSI 99 sql syntax (including joins) has been added in 11g with the new precompiler option common_parser
+PROCPPFLAGS=code=cpp $(CPLUS_SYS_INCLUDE) $(PROCPLSFLAGS) parse=none cpp_suffix=cpp common_parser=yes
+NETWORKHOME=$(ORACLE_HOME)/network/
+PLSQLHOME=$(ORACLE_HOME)/plsql/
+I_SYM=-I
+#INCLUDE=$(I_SYM). $(I_SYM)$(PRECOMPHOME)public $(I_SYM)$(RDBMSHOME)public $(I_SYM)$(RDBMSHOME)demo $(I_SYM)$(PLSQLHOME)public $(I_SYM)$(NETWORKHOME)public 
+
+ORACLE_VN=11
+ORACLE_LIB_DIR  = $(ORACLE_HOME)/lib
+ORACLE_LIB_OPTS = -lc -lclntsh -lm -ldl -lm -lpthread -lnsl 
+#-lclntsh -lsql$(ORACLE_VN) -lclient$(ORACLE_VN) -lcommon$(ORACLE_VN) -lgeneric$(ORACLE_VN) -lcore$(ORACLE_VN) -lnls$(ORACLE_VN) -lsocket -lm -ldl -lm -lthread
+
+LINK_LIB_DIR_OPTS  = -L$(RMAC_LIB_DIR) -L$(ORACLE_LIB_DIR)
+LINK_LIB_OPTS   = $(ORACLE_LIB_OPTS)
+LDFLAGS         = $(LINK_LIB_DIR_OPTS) $(LINK_LIB_OPTS) -L/usr/lib/oracle/11.2/client64/lib/ -lclntsh -DSQLCA_STORAGE_CLASS=extern
+
+all: indrevenuV3
+
+clean: 
+	@echo "Suppression des objets compilés"
+	@rm $(INDREVENU_OBJS) 2>/dev/null
+
+cleanpc: 
+	@echo "Suppression des objets pro-c"
+	@rm $(INDREVENU_POBJS) 2>/dev/null
+
+re: clean cleanpc all
+

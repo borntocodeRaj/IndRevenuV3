@@ -1,0 +1,8 @@
+*.o
+*.lis
+Ind_Revenus.opensdf
+Ind_Revenus.sdf
+Ind_Revenus.sln
+Ind_Revenus.v11.suo
+Ind_Revenus.vcxproj
+Ind_Revenus.vcxproj.filters
